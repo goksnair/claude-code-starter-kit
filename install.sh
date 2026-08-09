@@ -182,6 +182,13 @@ if [[ -f "$TEMPLATES_DIR/README.md" ]]; then
   echo "  ✓ README.md"
 fi
 
+if [[ -f "$TEMPLATES_DIR/score-starter-kit.sh" ]]; then
+  dst="$PROJECT_PATH/score-starter-kit.sh"
+  cp "$TEMPLATES_DIR/score-starter-kit.sh" "$dst"
+  chmod +x "$dst"
+  echo "  ✓ score-starter-kit.sh"
+fi
+
 # ── 11. Bootstrap memory files ────────────────────────────────────────────────
 
 bootstrap_file() {
