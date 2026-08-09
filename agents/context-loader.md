@@ -55,7 +55,7 @@ SITUATION
 THEIR POSITION
   [What they want / expect from this conversation]
 
-GOKUL'S POSITION
+USER'S POSITION
   [What outcome is needed — extracted from SESSION_HANDOFF / CURRENT_STATE]
 
 THE GAP
