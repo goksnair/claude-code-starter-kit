@@ -1,0 +1,22 @@
+{
+  "project_name": "{{PROJECT_NAME}}",
+  "project_path": "{{PROJECT_PATH}}",
+  "author": "{{USER_NAME}}",
+  "brand_name": "{{BRAND_NAME}}",
+  "brand_voice": "{{BRAND_VOICE}}",
+  "memory": {
+    "status_file": ".claude/memory/STATUS.md",
+    "goals_file": ".claude/memory/goals.md",
+    "preferences_file": ".claude/memory/preferences.md",
+    "session_handoff": ".claude/status/SESSION_HANDOFF.md",
+    "current_state": ".claude/status/CURRENT_STATE.md"
+  },
+  "knowledge_dirs": [
+    "knowledge/"
+  ],
+  "scratch_dir": ".claude/scratch",
+  "sessions_dir": ".claude/sessions",
+  "hooks_dir": ".claude/hooks",
+  "agents_dir": ".claude/agents",
+  "commands_dir": ".claude/commands"
+}

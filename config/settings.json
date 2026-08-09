@@ -1,0 +1,212 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch",
+      "Bash(git:*)",
+      "Bash(python3:*)",
+      "Bash(npm:*)"
+    ],
+    "additionalDirectories": [
+      "{{PROJECT_PATH}}/.claude/scratch",
+      "{{PROJECT_PATH}}/.claude/hooks",
+      "{{PROJECT_PATH}}/.claude",
+      "{{PROJECT_PATH}}/.claude/status",
+      "{{PROJECT_PATH}}/.claude/commands",
+      "/tmp"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/session-start.py",
+            "timeout": 5,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/context-load.py",
+            "timeout": 5,
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/url-capture.py",
+            "timeout": 5,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/large-file-guard.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/pre-implementation-gate.py",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/bash-tool-guard.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/infra-commit-guard.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/memory-validator.py",
+            "timeout": 5,
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/output-cap-guard.py",
+            "timeout": 5,
+            "async": true
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/infra-verify.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/skill-body-size-guard.py",
+            "timeout": 3,
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/wiki-ingest-guard.py",
+            "timeout": 5,
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/pii-brand-guard.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/copy-quality-guard.py",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/doc-governance.py",
+            "timeout": 5,
+            "async": true
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/infra-verify.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/wiki-ingest-guard.py",
+            "timeout": 5,
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/pii-brand-guard.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/copy-quality-guard.py",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/post-commit-sdlc-audit.py",
+            "timeout": 10,
+            "async": false
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/content-output-guard.py",
+            "timeout": 8,
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/session-persist.py",
+            "timeout": 10,
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/context-check.py",
+            "timeout": 5,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/pre-compact-backup.py",
+            "timeout": 10,
+            "async": true
+          }
+        ]
+      }
+    ]
+  }
+}
