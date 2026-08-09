@@ -87,7 +87,7 @@ if [[ "$PRINT_PLAN" == true ]]; then
   echo ""
   echo "Would copy and patch:"
   echo "  commands/*.md  hooks/*.py  agents/*.md  rules/*.md  scripts/*.py"
-  echo "  .claude/settings.json  infra-config.json  CLAUDE.md  REPO_MAP.md"
+  echo "  .claude/settings.json  infra-config.json  CLAUDE.md  REPO_MAP.md  SETUP_PHASES.md"
   echo "  weekly-health-checklist.md  README.md  score-starter-kit.sh"
   echo ""
   echo "Would bootstrap memory files:"
@@ -267,6 +267,13 @@ if [[ -f "$TEMPLATES_DIR/REPO_MAP.md" ]]; then
   cp "$TEMPLATES_DIR/REPO_MAP.md" "$dst"
   replace_placeholders "$dst"
   echo "  ✓ REPO_MAP.md"
+fi
+
+if [[ -f "$TEMPLATES_DIR/SETUP_PHASES.md" ]]; then
+  dst="$PROJECT_PATH/SETUP_PHASES.md"
+  cp "$TEMPLATES_DIR/SETUP_PHASES.md" "$dst"
+  replace_placeholders "$dst"
+  echo "  ✓ SETUP_PHASES.md"
 fi
 
 # ── 10. Copy weekly health checklist ─────────────────────────────────────────
