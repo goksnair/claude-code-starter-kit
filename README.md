@@ -139,6 +139,14 @@ bash score-starter-kit.sh
 
 You should see a score of **98/100**. If any dimension scores below 8, something didn't install correctly — re-run the installer on a clean path.
 
+After completing the 3 customization steps below, run this inside Claude Code for a full end-to-end human-readable verification:
+
+```text
+/setup-check
+```
+
+This checks all 12 items across files, hooks, commands, and memory — and tells you exactly what to fix if anything is missing.
+
 ---
 
 ## Customize before your first real session
@@ -155,6 +163,39 @@ Edit these 3 files after install — everything else can wait:
 **2. `CLAUDE.md`** — open this file and read through it. Remove any sections that don't apply to your use case.
 
 **3. `.claude/memory/goals.md`** — fill in what you're actually trying to achieve. Claude reads this at every session start.
+
+---
+
+## What to set up next (optional plugins)
+
+The starter kit works out of the box. These plugins unlock additional capabilities when you're ready:
+
+### graphify — Knowledge graph over your codebase
+
+Lets you run `/graphify query "how does X work?"` to explore relationships across files.
+
+```bash
+npm install -g graphify-cli
+graphify init .
+```
+
+### last30days — Market and signal research
+
+Powers the `/research` command — pulls Reddit, X, YouTube, HackerNews signals for any topic from the last 30 days.
+
+```bash
+claude plugins install mvanhorn/last30days-skill
+```
+
+### autoresearch — Scheduled research loops
+
+Runs research automatically on a schedule and surfaces results at session start.
+
+```bash
+claude plugins install uditgoenka/autoresearch
+```
+
+These are pre-registered in `knowledge/claude-ops/deferred-triggers.md` — Claude will surface them at the right moment.
 
 ---
 
@@ -198,6 +239,10 @@ Claude remembers things across sessions through 5 files:
 | `/humanize` | Strips AI-patterns from generated content |
 | `/capture [note]` | Quick note auto-routed to the right memory file |
 | `/compact` | Summarizes context at turn 10-12 |
+| `/recall [query]` | Search past sessions by topic |
+| `/query [topic]` | Search the knowledge wiki |
+| `/pivot engagement:<name>` | Load a client engagement context |
+| `/setup-check` | Verify the entire setup is working end-to-end |
 
 ---
 

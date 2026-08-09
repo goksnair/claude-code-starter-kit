@@ -50,7 +50,11 @@ dirs=(
   ".claude/scratch"
   ".claude/status"
   ".claude/sessions"
+  ".claude/scripts"
   "knowledge"
+  "knowledge/wiki"
+  "knowledge/claude-ops"
+  "knowledge/projects"
 )
 
 for d in "${dirs[@]}"; do
@@ -136,7 +140,23 @@ if [[ -d "$RULES_SRC" ]]; then
   done
 fi
 
-# ── 8. Copy and patch config files ────────────────────────────────────────────
+# ── 8. Copy scripts/ ──────────────────────────────────────────────────────────
+
+SCRIPTS_SRC="$TEMPLATES_DIR/scripts"
+SCRIPTS_DST="$PROJECT_PATH/.claude/scripts"
+
+if [[ -d "$SCRIPTS_SRC" ]]; then
+  for src in "$SCRIPTS_SRC"/*.py; do
+    [[ -f "$src" ]] || continue
+    fname="$(basename "$src")"
+    dst="$SCRIPTS_DST/$fname"
+    cp "$src" "$dst"
+    chmod +x "$dst"
+    echo "  ✓ scripts/$fname"
+  done
+fi
+
+# ── 9. Copy and patch config files ────────────────────────────────────────────
 
 CONFIG_SRC="$TEMPLATES_DIR/config"
 
@@ -278,6 +298,104 @@ bootstrap_file "$PROJECT_PATH/.claude/status/MILESTONE_REGISTRY.json" "{
   \"created\": \"${TODAY}\",
   \"milestones\": []
 }"
+
+bootstrap_file "$PROJECT_PATH/knowledge/wiki/claude-ops.md" "# Claude Ops Wiki — ${PROJECT_NAME}
+last_updated: ${TODAY}
+
+## System Notes
+
+Add notes about your Claude Code setup here — what works, what to avoid, decisions made.
+
+## Hook Inventory
+
+| Hook | Event | Purpose |
+|------|-------|---------|
+| session-start.py | SessionStart | Loads memory, warns on deadlines |
+| memory-validator.py | PreToolUse | Guards wrong-path writes |
+| stale-template-check.py | PreCompact | Detects template drift |
+
+## Commands Added
+
+| Command | Purpose |
+|---------|---------|
+| /start | Morning briefing |
+| /work | Task pipeline |
+| /checkpoint | Session close |
+| /recall | Search past sessions |
+| /query | Search wiki |
+"
+
+bootstrap_file "$PROJECT_PATH/knowledge/wiki/projects.md" "# Projects Wiki — ${PROJECT_NAME}
+last_updated: ${TODAY}
+
+## Active Projects
+
+| Project | Status | Next action |
+|---------|--------|-------------|
+| (add your projects here) | — | — |
+
+## Decisions Log
+
+| Decision | Date | Outcome |
+|----------|------|---------|
+| (none yet) | — | — |
+"
+
+bootstrap_file "$PROJECT_PATH/knowledge/claude-ops/deferred-triggers.md" "# Deferred Triggers — ${PROJECT_NAME}
+last_updated: ${TODAY}
+
+Tracks items that are waiting on a condition before action is taken.
+
+## Active Deferrals
+
+| ID | Item | Type | Condition | Status | Source |
+|----|------|------|-----------|--------|--------|
+| D-P01 | Install graphify for knowledge graph queries | MANUAL | When ready to explore codebase relationships | waiting | README |
+| D-P02 | Install last30days plugin for /research command | MANUAL | When ready for market/signal research | waiting | README |
+| D-P03 | Install autoresearch plugin for scheduled research loops | MANUAL | When ready for automated research | waiting | README |
+
+## Completed Deferrals
+
+(none yet)
+
+---
+
+## Plugin Install Commands (when ready)
+
+**graphify** — knowledge graph over your codebase:
+\`\`\`bash
+npm install -g graphify-cli
+graphify init .
+\`\`\`
+
+**last30days** — Reddit/X/YouTube signal research:
+\`\`\`bash
+claude plugins install mvanhorn/last30days-skill
+\`\`\`
+
+**autoresearch** — scheduled research loops:
+\`\`\`bash
+claude plugins install uditgoenka/autoresearch
+\`\`\`
+"
+
+bootstrap_file "$PROJECT_PATH/knowledge/claude-ops/ENGAGEMENT_REGISTRY.md" "# Engagement Registry — ${PROJECT_NAME}
+last_updated: ${TODAY}
+
+Tracks active client engagements and projects. Use /pivot engagement:<name> to load context.
+
+## Registry
+
+| Name | Type | Status | Gate condition |
+|------|------|--------|----------------|
+| (add engagements here) | — | NOT STARTED | — |
+
+## How to add an engagement
+
+1. Create \`~/engagements/<name>/CONTEXT.md\` with phase, status, key people
+2. Add a row to this registry
+3. Run: /pivot engagement:<name>
+"
 
 # ── 12. Summary ───────────────────────────────────────────────────────────────
 

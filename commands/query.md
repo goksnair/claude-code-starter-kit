@@ -1,38 +1,31 @@
----
-description: "Answer a question from the project wiki or memory. Routes to the right source."
----
+# /query — Search the knowledge wiki
 
-Answer the following question. Route to the correct source.
+Searches wiki pages in `knowledge/wiki/` for a topic.
 
-## Step 1 — Hybrid search first
+## Usage
 
-Run hybrid search before manual routing (if session-index.py is present):
-
-```bash
-{{PROJECT_PATH}}/scripts/session-index.py search "$ARGUMENTS" --top 5
+```
+/query <topic>
+/query <topic> --file <wiki-page>
 ```
 
-If this returns results, use the top matches to locate the right file or section. Read the matched file at the indicated heading, then answer.
+## Steps
 
-If the script is absent or returns no results, fall through to manual routing below.
+1. Run a grep across `knowledge/wiki/`:
 
-## Step 2 — Manual routing fallback
+```bash
+grep -ri "<TOPIC>" knowledge/wiki/ --include="*.md" -l
+```
 
-Route to the appropriate source based on what the question is about:
+2. For each matching file, read the relevant section (grep -A 5 -B 2).
 
-- Project decisions, deadlines, active status → `.claude/memory/STATUS.md`
-- Goals, milestones, targets → `.claude/memory/goals.md`
-- Domain knowledge, research → `knowledge/` subdirectory matching the topic
-- Project architecture, system design → `knowledge/` or top-level docs
+3. Synthesise findings into a 3-5 line answer. Cite the wiki page.
 
-Adapt this routing map to your project's actual knowledge structure.
+If nothing found: say so clearly and suggest adding a wiki entry with `/capture`.
 
-## Step 3 — Answer
+## Notes
 
-1. Read the matched source(s)
-2. Answer — cite which files you read and which headings
-3. If source is a stub: say so, suggest `/capture` or manual update with a specific source
-4. If answer required new synthesis: offer to write it as a new knowledge file or memory update
-
-Question:
-$ARGUMENTS
+- Wiki pages live at `knowledge/wiki/<domain>.md`
+- Starter pages: claude-ops.md (system notes), projects.md (active work)
+- Add new pages as your knowledge base grows
+- `/capture [fact]` routes new facts to the right wiki page automatically
