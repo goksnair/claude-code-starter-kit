@@ -25,12 +25,14 @@ handoff = f'{proj}/.claude/status/SESSION_HANDOFF.md'
 
 if not os.path.exists(goals):
     print('STATE: not-installed')
-elif open(goals).read().strip() in ('', '(fill in)') or '(fill in)' in open(goals).read():
-    print('STATE: installed-not-configured')
-elif os.path.exists(handoff) and 'project initialized' in open(handoff).read():
-    print('STATE: installed-not-configured')
 else:
-    print('STATE: configured')
+    content = open(goals).read()
+    if '<!-- CLAUDE:TEMPLATE -->' in content or '(fill in)' in content or content.strip() == '':
+        print('STATE: installed-not-configured')
+    elif os.path.exists(handoff) and 'project initialized' in open(handoff).read():
+        print('STATE: installed-not-configured')
+    else:
+        print('STATE: configured')
 "
 ```
 
@@ -127,6 +129,21 @@ Memory files written:
   ✓ STATUS.md — [one line summary]
   ✓ SESSION_HANDOFF.md — [one line summary]
 ```
+
+---
+
+## Step 4b — Memory-file writer routine
+
+Before writing any memory file, follow this routine:
+
+1. Read the target file if it exists.
+2. Check for the `<!-- CLAUDE:TEMPLATE -->` sentinel in the content.
+3. **If sentinel is present**: safe to overwrite with the confirmed draft.
+4. **If sentinel is absent AND file has content**: do NOT overwrite. Show the current content to the user and ask: "Would you like to replace it? (yes/no)"
+5. Write only after: (a) sentinel was detected, or (b) the user explicitly answered "yes".
+6. After writing: strip the `<!-- CLAUDE:TEMPLATE -->` sentinel line from the written file. User memory files must not contain the sentinel.
+
+Apply all rules from Step 4 above.
 
 ---
 
