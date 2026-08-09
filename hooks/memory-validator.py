@@ -88,8 +88,8 @@ def main():
         return
 
     # Vault-existence guard — skip all enforcement if vault not configured or missing
-    vault_path = Path(os.path.expanduser(VAULT)) if '{{' not in VAULT else None
-    if vault_path is None or not vault_path.exists():
+    vault_path = Path(os.path.expanduser(VAULT))
+    if not vault_path.exists():
         print('[memory-validator] vault not found, skipping vault enforcement')
         return
 
