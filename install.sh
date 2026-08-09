@@ -176,6 +176,12 @@ if [[ -f "$TEMPLATES_DIR/weekly-health-checklist.md" ]]; then
   echo "  ✓ weekly-health-checklist.md"
 fi
 
+if [[ -f "$TEMPLATES_DIR/README.md" ]]; then
+  dst="$PROJECT_PATH/README.md"
+  cp "$TEMPLATES_DIR/README.md" "$dst"
+  echo "  ✓ README.md"
+fi
+
 # ── 11. Bootstrap memory files ────────────────────────────────────────────────
 
 bootstrap_file() {
