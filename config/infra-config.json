@@ -3,7 +3,9 @@
   "project_path": "{{PROJECT_PATH}}",
   "author": "{{USER_NAME}}",
   "brand_name": "{{BRAND_NAME}}",
+  "_comment_brand_name": "Replace with your product or company name — used in generated copy, CLAUDE.md headers, and agent persona descriptions",
   "brand_voice": "{{BRAND_VOICE}}",
+  "_comment_brand_voice": "Describe your communication style in 3-5 words (e.g. 'direct, technical, no fluff') — injected into copy-check and humanize commands",
   "memory": {
     "status_file": ".claude/memory/STATUS.md",
     "goals_file": ".claude/memory/goals.md",

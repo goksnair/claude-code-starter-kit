@@ -128,8 +128,7 @@ def check_file_overrides() -> list[dict]:
 
 def main():
     if not TEMPLATES_DIR.exists():
-        print(f"Templates directory not found: {TEMPLATES_DIR}")
-        print("Run this script from the project root or set PROJECT_ROOT env var.")
+        print('no template dir, skipping')
         sys.exit(0)
 
     all_results = []
