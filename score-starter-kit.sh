@@ -5,6 +5,13 @@
 
 set -euo pipefail
 
+JSON_MODE=false
+for arg in "$@"; do
+  case "$arg" in
+    --json) JSON_MODE=true ;;
+  esac
+done
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INSTALL_PATH="/tmp/sk-score-$(date +%Y%m%d-%H%M%S)"
 INSTALL_SCRIPT="$SCRIPT_DIR/install.sh"
@@ -290,6 +297,44 @@ render_scorecard() {
   echo "TOTAL: $TOTAL/100"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 }
+
+if [[ "$JSON_MODE" == true ]]; then
+  PASS_ITEMS=()
+  FAIL_ITEMS=()
+  WARN_ITEMS=()
+  for i in $(seq 1 10); do
+    name="${DIM_NAMES[$i]}"
+    score="${DIM_SCORES[$i]}"
+    if [[ "$score" -eq 10 ]]; then
+      PASS_ITEMS+=("$name")
+    elif [[ "$score" -ge 5 ]]; then
+      WARN_ITEMS+=("$name")
+    else
+      FAIL_ITEMS+=("$name")
+    fi
+  done
+
+  json_array() {
+    local arr=("$@")
+    local out="["
+    local first=true
+    for item in "${arr[@]}"; do
+      if [[ "$first" == true ]]; then
+        first=false
+      else
+        out+=","
+      fi
+      out+="\"$(echo "$item" | sed 's/"/\\"/g')\""
+    done
+    out+="]"
+    echo "$out"
+  }
+
+  echo "{\"score\": ${TOTAL}, \"pass\": $(json_array "${PASS_ITEMS[@]}"), \"fail\": $(json_array "${FAIL_ITEMS[@]}"), \"warn\": $(json_array "${WARN_ITEMS[@]}")}"
+
+  rm -rf "$INSTALL_PATH"
+  exit 0
+fi
 
 # Print to stdout
 render_scorecard

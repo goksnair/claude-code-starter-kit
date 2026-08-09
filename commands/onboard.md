@@ -140,3 +140,27 @@ Do not run `/start` automatically. Hand back to the user.
 3. Is there any `(fill in)` or `{{}}` placeholder remaining in any written file?
 
 If any check fails: fix it before printing SETUP COMPLETE.
+
+---
+
+## Phase 4 — Orientation
+
+After Step 6 completes successfully:
+
+### Step 7 — Validate score
+
+Run `bash score-starter-kit.sh --json` in the project directory. Parse the JSON output and confirm the `score` field is >= 95.
+
+If score is below 95: list the `fail` items and fix them before continuing. Do not proceed until score >= 95.
+
+### Step 8 — Present orientation
+
+Read `CLAUDE_ONBOARDING.md` from the project root (it was copied during install). Present its full content to the user — this covers what was set up, daily commands, memory architecture, and troubleshooting.
+
+### Step 9 — Hand off
+
+Print:
+
+```
+Run /start when you're ready.
+```
