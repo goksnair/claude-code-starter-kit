@@ -13,6 +13,7 @@ for arg in "$@"; do
 done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
 INSTALL_PATH="/tmp/sk-score-$(date +%Y%m%d-%H%M%S)"
 INSTALL_SCRIPT="$SCRIPT_DIR/install.sh"
 SCORECARD="$(pwd)/.claude/scratch/starter-kit-benchmark-scorecard.md"

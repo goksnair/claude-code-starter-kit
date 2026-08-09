@@ -298,6 +298,13 @@ if [[ -f "$TEMPLATES_DIR/score-starter-kit.sh" ]]; then
   echo "  ✓ score-starter-kit.sh"
 fi
 
+if [[ -f "$TEMPLATES_DIR/CLAUDE_ONBOARDING.md" ]]; then
+  dst="$PROJECT_PATH/CLAUDE_ONBOARDING.md"
+  cp "$TEMPLATES_DIR/CLAUDE_ONBOARDING.md" "$dst"
+  replace_placeholders "$dst"
+  echo "  ✓ CLAUDE_ONBOARDING.md"
+fi
+
 # ── 11. Bootstrap memory files ────────────────────────────────────────────────
 
 bootstrap_file() {
