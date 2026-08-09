@@ -149,6 +149,55 @@ This checks all 12 items across files, hooks, commands, and memory — and tells
 
 ---
 
+## Already have a project? Wire it in
+
+Install the kit into a new OS folder. Claude reads your existing project and populates the memory files for you — no manual copying required.
+
+### Step 1 — Install into a new folder, not your existing project
+
+```bash
+bash install.sh MyOS ~/my-os "Your Name"
+```
+
+Your existing project stays untouched.
+
+### Step 2 — Open the OS folder in Claude and run this prompt
+
+```
+I have an existing project at ~/your-existing-project.
+Read that project's files, memory, and any CLAUDE.md or notes there.
+Then populate my new OS memory files:
+- .claude/memory/STATUS.md — active decisions and blockers from that project
+- .claude/memory/goals.md — goals I've mentioned or implied in that project
+- .claude/status/SESSION_HANDOFF.md — the most recent active task and open items
+
+Only write things you can confirm from the files, not assumptions.
+```
+
+Review what Claude wrote before your first real session.
+
+### Step 3 — Register the existing project
+
+Add it to `knowledge/claude-ops/PROJECT_REGISTRY.md`:
+
+```markdown
+| my-existing-project | [type] | ACTIVE | — |
+```
+
+Create a short context file at `~/your-existing-project/CONTEXT.md`:
+
+```markdown
+# Project: [Name]
+Phase: [current phase]
+Status: [what's happening now]
+Next action: [what needs to happen next]
+Key files: [1-2 most important files Claude should always know about]
+```
+
+`/pivot project:my-existing-project` will load this context in any future OS session.
+
+---
+
 ## Customize before your first real session
 
 Edit these 3 files after install — everything else can wait:
