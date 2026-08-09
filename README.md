@@ -2,6 +2,8 @@
 
 ## What it is
 
+> **Claude Code agent?** Read [`REPO_MAP.md`](REPO_MAP.md) first, then run `/onboard`.
+
 Claude Code Starter Kit gives any Claude user a production-ready AI workspace in under 5 minutes. It installs a 23-hook automation system, 50+ slash commands, 10 specialist agents, and a structured memory architecture — so Claude remembers context across sessions, enforces quality, and routes tasks to the right specialist automatically.
 
 Works with Claude Code in terminal, VS Code, Cursor, JetBrains, or any IDE with the Claude extension.

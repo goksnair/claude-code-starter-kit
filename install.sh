@@ -1,28 +1,65 @@
 #!/usr/bin/env bash
 # install.sh — Install Claude Code Starter Kit into a new project
-# Usage: ./install.sh [PROJECT_NAME] [PROJECT_PATH]
-# Or run interactively (no args) to be prompted.
+#
+# Usage (human):
+#   bash install.sh                                        # interactive prompts
+#   bash install.sh MyOS ~/my-os "Jane Smith"              # positional args
+#
+# Usage (Claude / non-interactive):
+#   bash install.sh --non-interactive MyOS ~/my-os "Jane Smith"
+#   bash install.sh --print-plan MyOS ~/my-os "Jane Smith" # dry-run, no writes
+#
+# Flags:
+#   --non-interactive   Skip all prompts. Requires PROJECT_NAME, PROJECT_PATH,
+#                       USER_NAME as positional args (after the flag).
+#   --print-plan        Print what would be installed and exit. No files written.
 
 set -e
 
 TEMPLATES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+NON_INTERACTIVE=false
+PRINT_PLAN=false
+
+# ── Parse flags ───────────────────────────────────────────────────────────────
+
+POSITIONAL=()
+for arg in "$@"; do
+  case "$arg" in
+    --non-interactive) NON_INTERACTIVE=true ;;
+    --print-plan)      PRINT_PLAN=true; NON_INTERACTIVE=true ;;
+    *) POSITIONAL+=("$arg") ;;
+  esac
+done
+set -- "${POSITIONAL[@]}"
 
 # ── 1. Collect project info ───────────────────────────────────────────────────
 
-if [[ -n "$1" ]]; then
+if [[ -n "${1:-}" ]]; then
   PROJECT_NAME="$1"
+elif [[ "$NON_INTERACTIVE" == true ]]; then
+  echo "ERROR: --non-interactive requires PROJECT_NAME as first positional arg."
+  echo "  Example: bash install.sh --non-interactive MyOS ~/my-os \"Jane Smith\""
+  exit 1
 else
   read -rp "Project name (e.g. my-project): " PROJECT_NAME
 fi
 
-if [[ -n "$2" ]]; then
+if [[ -n "${2:-}" ]]; then
   PROJECT_PATH="$2"
+elif [[ "$NON_INTERACTIVE" == true ]]; then
+  echo "ERROR: --non-interactive requires PROJECT_PATH as second positional arg."
+  echo "  Example: bash install.sh --non-interactive MyOS ~/my-os \"Jane Smith\""
+  exit 1
 else
   read -rp "Project path (absolute, e.g. /Users/you/my-project): " PROJECT_PATH
 fi
 
-if [[ -n "$3" ]]; then
+if [[ -n "${3:-}" ]]; then
   USER_NAME="$3"
+elif [[ "$NON_INTERACTIVE" == true ]]; then
+  echo "ERROR: --non-interactive requires USER_NAME as third positional arg."
+  echo "  Example: bash install.sh --non-interactive MyOS ~/my-os \"Jane Smith\""
+  exit 1
 else
   read -rp "Your name (e.g. Jane Smith): " USER_NAME
 fi
@@ -30,6 +67,44 @@ fi
 if [[ -z "$PROJECT_NAME" || -z "$PROJECT_PATH" || -z "$USER_NAME" ]]; then
   echo "ERROR: PROJECT_NAME, PROJECT_PATH, and USER_NAME are required."
   exit 1
+fi
+
+# ── Print plan and exit if --print-plan ──────────────────────────────────────
+
+if [[ "$PRINT_PLAN" == true ]]; then
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "INSTALL PLAN (dry-run — no files written)"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "  Project name : $PROJECT_NAME"
+  echo "  Project path : $PROJECT_PATH"
+  echo "  User name    : $USER_NAME"
+  echo "  Templates    : $TEMPLATES_DIR"
+  echo ""
+  echo "Would create directories:"
+  echo "  $PROJECT_PATH/.claude/{commands,hooks,agents,rules,memory,scratch,status,sessions,scripts}"
+  echo "  $PROJECT_PATH/knowledge/{wiki,claude-ops,projects}"
+  echo ""
+  echo "Would copy and patch:"
+  echo "  commands/*.md  hooks/*.py  agents/*.md  rules/*.md  scripts/*.py"
+  echo "  .claude/settings.json  infra-config.json  CLAUDE.md  REPO_MAP.md"
+  echo "  weekly-health-checklist.md  README.md  score-starter-kit.sh"
+  echo ""
+  echo "Would bootstrap memory files:"
+  echo "  .claude/memory/STATUS.md"
+  echo "  .claude/memory/goals.md"
+  echo "  .claude/status/SESSION_HANDOFF.md"
+  echo "  .claude/status/CURRENT_STATE.md"
+  echo "  .claude/scratch/AGENT_STATE.json"
+  echo "  .claude/status/MILESTONE_REGISTRY.json"
+  echo "  knowledge/wiki/claude-ops.md"
+  echo "  knowledge/wiki/projects.md"
+  echo "  knowledge/claude-ops/deferred-triggers.md"
+  echo "  knowledge/claude-ops/PROJECT_REGISTRY.md"
+  echo ""
+  echo "Run without --print-plan to execute."
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  exit 0
 fi
 
 echo ""
@@ -178,13 +253,20 @@ if [[ -d "$CONFIG_SRC" ]]; then
   fi
 fi
 
-# ── 9. Copy CLAUDE.md ─────────────────────────────────────────────────────────
+# ── 9. Copy CLAUDE.md and REPO_MAP.md ────────────────────────────────────────
 
 if [[ -f "$TEMPLATES_DIR/CLAUDE.md" ]]; then
   dst="$PROJECT_PATH/CLAUDE.md"
   cp "$TEMPLATES_DIR/CLAUDE.md" "$dst"
   replace_placeholders "$dst"
   echo "  ✓ CLAUDE.md"
+fi
+
+if [[ -f "$TEMPLATES_DIR/REPO_MAP.md" ]]; then
+  dst="$PROJECT_PATH/REPO_MAP.md"
+  cp "$TEMPLATES_DIR/REPO_MAP.md" "$dst"
+  replace_placeholders "$dst"
+  echo "  ✓ REPO_MAP.md"
 fi
 
 # ── 10. Copy weekly health checklist ─────────────────────────────────────────

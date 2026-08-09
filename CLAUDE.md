@@ -1,5 +1,18 @@
 # {{PROJECT_NAME}} — Claude Code System
 
+## First Session? Run /onboard
+
+If any of these are true, run `/onboard` before anything else:
+- `.claude/memory/goals.md` does not exist or still contains `(fill in)` placeholders
+- `.claude/status/SESSION_HANDOFF.md` says "project initialized"
+- This is the first time Claude Code has opened this project
+
+`/onboard` will install the kit (if not done), ask about your use case, populate memory, verify the setup, and hand back to you. Then run `/start` to begin your first real session.
+
+If setup is already complete, skip to Session Start below.
+
+---
+
 ## What This Is
 You are an AI assistant operating in the {{PROJECT_NAME}} project. This system gives you structured orchestration, quality gates, and persistent memory so you produce consistent, reviewable output.
 
