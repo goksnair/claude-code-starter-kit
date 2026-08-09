@@ -21,8 +21,14 @@ else
   read -rp "Project path (absolute, e.g. /Users/you/my-project): " PROJECT_PATH
 fi
 
-if [[ -z "$PROJECT_NAME" || -z "$PROJECT_PATH" ]]; then
-  echo "ERROR: PROJECT_NAME and PROJECT_PATH are required."
+if [[ -n "$3" ]]; then
+  USER_NAME="$3"
+else
+  read -rp "Your name (e.g. Jane Smith): " USER_NAME
+fi
+
+if [[ -z "$PROJECT_NAME" || -z "$PROJECT_PATH" || -z "$USER_NAME" ]]; then
+  echo "ERROR: PROJECT_NAME, PROJECT_PATH, and USER_NAME are required."
   exit 1
 fi
 
@@ -30,6 +36,7 @@ echo ""
 echo "Installing Claude Code Starter Kit"
 echo "  Project name : $PROJECT_NAME"
 echo "  Project path : $PROJECT_PATH"
+echo "  User name    : $USER_NAME"
 echo ""
 
 # ── 2. Create directory structure ─────────────────────────────────────────────
@@ -55,11 +62,13 @@ echo "✓ Directory structure created"
 
 replace_placeholders() {
   local file="$1"
-  # Use a temp file to avoid in-place sed portability issues
   local tmp="${file}.tmp"
   sed \
     -e "s|{{PROJECT_NAME}}|${PROJECT_NAME}|g" \
     -e "s|{{PROJECT_PATH}}|${PROJECT_PATH}|g" \
+    -e "s|{{USER_NAME}}|${USER_NAME}|g" \
+    -e "s|{{DATE}}|${TODAY}|g" \
+    -e "s|{{VAULT_PATH}}|${HOME}/.vault|g" \
     "$file" > "$tmp" && mv "$tmp" "$file"
 }
 
@@ -104,8 +113,6 @@ if [[ -d "$AGENTS_SRC" ]]; then
   for src in "$AGENTS_SRC"/*.md; do
     [[ -f "$src" ]] || continue
     fname="$(basename "$src")"
-    # Skip shared context files that are project-specific
-    [[ "$fname" == AGENT_SHARED_CONTEXT.md ]] && continue
     dst="$AGENTS_DST/$fname"
     cp "$src" "$dst"
     replace_placeholders "$dst"
@@ -253,6 +260,12 @@ bootstrap_file "$PROJECT_PATH/.claude/scratch/AGENT_STATE.json" '{
   "completed_tasks": []
 }'
 
+bootstrap_file "$PROJECT_PATH/.claude/status/MILESTONE_REGISTRY.json" "{
+  \"project\": \"${PROJECT_NAME}\",
+  \"created\": \"${TODAY}\",
+  \"milestones\": []
+}"
+
 # ── 12. Summary ───────────────────────────────────────────────────────────────
 
 echo ""
@@ -264,8 +277,10 @@ echo "Next steps:"
 echo "  1. Edit $PROJECT_PATH/CLAUDE.md — review and customize"
 echo "  2. Edit $PROJECT_PATH/.claude/memory/STATUS.md — fill in active decisions"
 echo "  3. Edit $PROJECT_PATH/.claude/memory/goals.md — fill in project goals"
-echo "  4. Review $PROJECT_PATH/.claude/settings.json — enable hooks you want"
+echo "  4. Review $PROJECT_PATH/.claude/settings.json — enable/disable hooks as needed"
 echo "  5. Open Claude Code in $PROJECT_PATH and run /start"
+echo ""
+echo "Usage tip: bash install.sh [PROJECT_NAME] [PROJECT_PATH] [USER_NAME]"
 echo ""
 echo "Installed to: $PROJECT_PATH"
 echo "Templates from: $TEMPLATES_DIR"

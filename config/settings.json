@@ -131,6 +131,12 @@
             "command": "python3 {{PROJECT_PATH}}/.claude/hooks/doc-governance.py",
             "timeout": 5,
             "async": true
+          },
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/wiki-lint-check.py",
+            "timeout": 5,
+            "async": true
           }
         ]
       },
@@ -202,6 +208,18 @@
           {
             "type": "command",
             "command": "python3 {{PROJECT_PATH}}/.claude/hooks/pre-compact-backup.py",
+            "timeout": 10,
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/session-backup.py",
+            "timeout": 10,
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/stale-template-check.py",
             "timeout": 10,
             "async": true
           }
