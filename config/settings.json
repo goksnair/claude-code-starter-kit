@@ -107,6 +107,12 @@
           },
           {
             "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/git-recent-wins.py",
+            "timeout": 5,
+            "async": true
+          },
+          {
+            "type": "command",
             "command": "python3 {{PROJECT_PATH}}/.claude/hooks/skill-body-size-guard.py",
             "timeout": 3,
             "async": true
@@ -195,6 +201,18 @@
           {
             "type": "command",
             "command": "python3 {{PROJECT_PATH}}/.claude/hooks/context-check.py",
+            "timeout": 5,
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/work-pipeline-guard.py",
+            "timeout": 5,
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/learn-rule-extractor.py",
             "timeout": 5,
             "async": true
           }

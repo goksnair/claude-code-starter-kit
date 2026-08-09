@@ -220,8 +220,8 @@ Claude remembers things across sessions through 5 files:
 | SessionStart | session-start.py, context-load.py | Deadline warnings, stale memory |
 | UserPromptSubmit | bash-tool-guard.py, large-file-guard.py | Tool discipline, context budget |
 | PreToolUse | memory-validator.py, content-output-guard.py | Wrong-path writes, output cap |
-| PostToolUse | doc-governance.py, wiki-lint-check.py | Doc quality, wiki drift |
-| Stop | session-persist.py | Turn count, handoff staleness |
+| PostToolUse | doc-governance.py, wiki-lint-check.py, git-recent-wins.py | Doc quality, wiki drift, wins log |
+| Stop | session-persist.py, work-pipeline-guard.py, learn-rule-extractor.py | Turn count, pipeline audit, rule extraction |
 | PreCompact | pre-compact-backup.py, stale-template-check.py | Backup, template drift |
 
 ---
@@ -232,13 +232,15 @@ Claude remembers things across sessions through 5 files:
 |---------|--------------|
 | `/start` | Morning briefing — loads memory, surfaces deadlines |
 | `/work [directive]` | Runs any task through the full agent pipeline |
-| `/pivot [persona]` | Switches context to a different work mode |
 | `/checkpoint` | End-of-session save + handoff update |
 | `/end` | Full session close |
+| `/status` | Full dashboard — decisions, deadlines, open items |
+| `/week` | Weekly review — goal alignment + next-week priorities |
+| `/capture [note]` | Quick note auto-routed to the right memory file |
+| `/dump [text]` | Bulk capture — routes all pieces to the right files |
+| `/lock [fact]` | Lock a confirmed fact/decision into memory immediately |
 | `/copy-check` | Scores outbound copy before you send it |
 | `/humanize` | Strips AI-patterns from generated content |
-| `/capture [note]` | Quick note auto-routed to the right memory file |
-| `/compact` | Summarizes context at turn 10-12 |
 | `/recall [query]` | Search past sessions by topic |
 | `/query [topic]` | Search the knowledge wiki |
 | `/pivot project:<name>` | Load a project context |

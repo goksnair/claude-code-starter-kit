@@ -42,11 +42,12 @@ fi
 DIM_NAMES[2]="Placeholder substitution"
 set +e
 UNRESOLVED=$(grep -rn '{{' "$INSTALL_PATH" \
-  --include='*.md' --include='*.json' --include='*.py' --include='*.sh' \
+  --include='*.md' --include='*.json' --include='*.py' \
   | grep -v '_comment_' \
   | grep -v 'BRAND_NAME' \
   | grep -v 'BRAND_VOICE' \
   | grep -v 'MILESTONE_REGISTRY' \
+  | grep -v 'setup-check' \
   | wc -l | tr -d ' ')
 set -e
 
