@@ -103,7 +103,7 @@ If nothing missed in either pass: print `✓ Knowledge capture: all session fact
 Scan the COMPLETED THIS SESSION block just written and the conversation for any events that would make a persona file's CONTEXT section factually wrong:
 
 - A venture closed, concluded, or changed status → `founder.md`
-- A client engagement ended or changed → `growth-consultant.md`
+- A client project ended or changed → `growth-consultant.md`
 - A checkpoint date passed (May 15, June 30, etc.) → `indie-hacker.md` / `indie-developer.md`
 - A new venture or stream added → `founder.md`
 - A track allocation decision changed → any persona

@@ -1,6 +1,6 @@
 # Copy Quality Index
 **Version**: 1.0
-**Purpose**: Gate any copy (website, email, SOP, pitch, blog, social, investor materials) before it ships. All 24 core checks must pass. Section D is project-specific — customize per engagement.
+**Purpose**: Gate any copy (website, email, SOP, pitch, blog, social, investor materials) before it ships. All 24 core checks must pass. Section D is project-specific — customize per project.
 **SSOT**: This file. Do not score copy in chat — score it against this index.
 
 ---
@@ -75,7 +75,7 @@ These words/phrases are statistically overrepresented in AI-generated text. Over
 
 ## Section D — Project Brand-Specific Checks
 
-**This section is customized per project.** Replace these placeholder checks with brand-specific gates before using this index on a new engagement.
+**This section is customized per project.** Replace these placeholder checks with brand-specific gates before using this index on a new project.
 
 | # | Check | Threshold | How to Test |
 |---|-------|-----------|-------------|

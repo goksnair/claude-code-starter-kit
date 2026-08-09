@@ -379,22 +379,22 @@ claude plugins install uditgoenka/autoresearch
 \`\`\`
 "
 
-bootstrap_file "$PROJECT_PATH/knowledge/claude-ops/ENGAGEMENT_REGISTRY.md" "# Engagement Registry — ${PROJECT_NAME}
+bootstrap_file "$PROJECT_PATH/knowledge/claude-ops/PROJECT_REGISTRY.md" "# Project Registry — ${PROJECT_NAME}
 last_updated: ${TODAY}
 
-Tracks active client engagements and projects. Use /pivot engagement:<name> to load context.
+Tracks active projects. Use /pivot project:<name> to load context.
 
 ## Registry
 
 | Name | Type | Status | Gate condition |
 |------|------|--------|----------------|
-| (add engagements here) | — | NOT STARTED | — |
+| (add projects here) | — | NOT STARTED | — |
 
-## How to add an engagement
+## How to add a project
 
-1. Create \`~/engagements/<name>/CONTEXT.md\` with phase, status, key people
+1. Create \`~/projects/<name>/CONTEXT.md\` with phase, status, key people
 2. Add a row to this registry
-3. Run: /pivot engagement:<name>
+3. Run: /pivot project:<name>
 "
 
 # ── 12. Summary ───────────────────────────────────────────────────────────────

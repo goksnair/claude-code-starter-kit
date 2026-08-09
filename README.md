@@ -241,7 +241,7 @@ Claude remembers things across sessions through 5 files:
 | `/compact` | Summarizes context at turn 10-12 |
 | `/recall [query]` | Search past sessions by topic |
 | `/query [topic]` | Search the knowledge wiki |
-| `/pivot engagement:<name>` | Load a client engagement context |
+| `/pivot project:<name>` | Load a project context |
 | `/setup-check` | Verify the entire setup is working end-to-end |
 
 ---

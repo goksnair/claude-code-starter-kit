@@ -33,7 +33,7 @@ EXEMPT_SEGMENTS = [
 BUSINESS_PATHS = [
     'knowledge/wiki/',
     'knowledge/ventures/',
-    'engagements/',
+    'projects/',
 ]
 
 
