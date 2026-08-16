@@ -202,18 +202,22 @@ README="$INSTALL_PATH/README.md"
 if [[ -f "$README" ]]; then
   LINE_COUNT=$(wc -l < "$README" | tr -d ' ')
   if [[ $LINE_COUNT -gt 300 ]]; then
-    HAS_QS=$(grep -ci '## .*install' "$README" 2>/dev/null || true)
-    HAS_WI=$(grep -ci "## .*what.*included" "$README" 2>/dev/null || true)
-    HAS_CMD=$(grep -ci '## .*command' "$README" 2>/dev/null || true)
+    # Expected README headings (update these if README structure changes):
+    #   HAS_QS: '^## Install' — matches "## Install — Step by Step"
+    #   HAS_WI: '^## What.s included' — matches "## What's included"
+    #   HAS_CMD: '^## Command list' — matches "## Command list"
+    HAS_QS=$(grep -ci '^## Install' "$README" 2>/dev/null || true)
+    HAS_WI=$(grep -ci "^## What.s included" "$README" 2>/dev/null || true)
+    HAS_CMD=$(grep -ci '^## Command list' "$README" 2>/dev/null || true)
     if [[ "$HAS_QS" -gt 0 && "$HAS_WI" -gt 0 && "$HAS_CMD" -gt 0 ]]; then
       record 7 10 "README.md $LINE_COUNT lines with all required sections"
     else
-      record 7 9 "README.md exists, $LINE_COUNT lines"
+      record 7 9 "README.md $LINE_COUNT lines, missing required headings"
     fi
   elif [[ $LINE_COUNT -gt 100 ]]; then
-    record 7 9 "README.md exists, $LINE_COUNT lines"
+    record 7 7 "README.md exists, $LINE_COUNT lines (101-300)"
   else
-    record 7 5 "README.md exists but only $LINE_COUNT lines (<100)"
+    record 7 5 "README.md exists but only $LINE_COUNT lines (<=100)"
   fi
 else
   record 7 0 "README.md absent"
