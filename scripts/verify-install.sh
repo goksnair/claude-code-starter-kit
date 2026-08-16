@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # verify-install.sh — End-to-end test for fresh install + upgrade path
-# Usage: bash scripts/verify-install.sh
+# Usage: run from the templates root — bash scripts/verify-install.sh
+#        (NOT from an installed project — install.sh must be in the parent dir)
 # Exit: 0 if all checks pass, 1 if any fail
 
 set -e

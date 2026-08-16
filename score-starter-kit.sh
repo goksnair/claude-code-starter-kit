@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # score-starter-kit.sh — Benchmark the Claude Code Starter Kit install
 # Usage: bash score-starter-kit.sh
-# Run from the starter kit root (where install.sh lives) or any project that was installed from it.
+# Run from the templates root (where install.sh lives) — not from an installed project copy.
 
 set -euo pipefail
 
@@ -49,13 +49,15 @@ fi
 
 DIM_NAMES[2]="Placeholder substitution"
 set +e
-UNRESOLVED=$(grep -rn '{{' "$INSTALL_PATH" \
-  --include='*.md' --include='*.json' --include='*.py' \
-  | grep -v '_comment_' \
-  | grep -v 'BRAND_NAME' \
-  | grep -v 'BRAND_VOICE' \
-  | grep -v 'MILESTONE_REGISTRY' \
-  | grep -v 'setup-check' \
+# Only check substitution-target files: hooks, memory, settings.json, CLAUDE.md
+# Scripts/docs/infra-config intentionally contain {{}} as literal syntax examples
+UNRESOLVED=$(grep -rn '{{PROJECT_PATH}}\|{{PROJECT_NAME}}\|{{USER_NAME}}\|{{DATE}}' \
+  "$INSTALL_PATH/.claude/hooks/" \
+  "$INSTALL_PATH/.claude/memory/" \
+  "$INSTALL_PATH/.claude/settings.json" \
+  "$INSTALL_PATH/CLAUDE.md" \
+  2>/dev/null \
+  | grep -v '\.pyc' \
   | wc -l | tr -d ' ')
 set -e
 

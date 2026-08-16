@@ -101,6 +101,7 @@ run_upgrade() {
   echo ""
   echo "Upgrading hooks..."
   cp "$TEMPLATES_DIR/hooks/"*.py "$project_path/.claude/hooks/" 2>/dev/null || true
+  chmod +x "$project_path/.claude/hooks/"*.py 2>/dev/null || true
   echo "  ✓ Hooks updated"
 
   echo "Upgrading commands..."
