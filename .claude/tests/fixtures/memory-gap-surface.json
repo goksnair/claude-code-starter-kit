@@ -1,0 +1,69 @@
+{
+  "feature": "memory-gap-surface",
+  "type": "hook",
+  "hook_path": "~/gokul-os/.claude/hooks/memory-gap-surface.py",
+  "hook_event": "Stop",
+  "description": "memory-gap-surface.py — Stop hook that surfaces uncaptured external IDs (H1), reference_*.md files absent from MEMORY.md (H2), and COMPLETED items lacking memory writes (H3). Also auto-indexes untracked reference files (stub only).",
+  "plan": "gokul-os-sdlc",
+  "test_cases": [
+    {
+      "label": "exits 0 silently on clean state (no gaps)",
+      "command": "mkdir -p /tmp/mgs_clean/.claude/projects/-Users-viresha-gokul-os/memory && echo '# Memory Index' > /tmp/mgs_clean/.claude/projects/-Users-viresha-gokul-os/memory/MEMORY.md && HOME=/tmp/mgs_clean python3 ~/gokul-os/.claude/hooks/memory-gap-surface.py <<< '{}'; echo exitcode=$?",
+      "expected_exit_code": 0,
+      "expected_stdout_contains": [
+        "exitcode=0"
+      ]
+    },
+    {
+      "label": "H2: detects reference_*.md absent from MEMORY.md index",
+      "command": "mkdir -p /tmp/mgs_h2/.claude/projects/-Users-viresha-gokul-os/memory && echo '# Memory Index' > /tmp/mgs_h2/.claude/projects/-Users-viresha-gokul-os/memory/MEMORY.md && touch /tmp/mgs_h2/.claude/projects/-Users-viresha-gokul-os/memory/reference_test_engagement.md && HOME=/tmp/mgs_h2 python3 ~/gokul-os/.claude/hooks/memory-gap-surface.py <<< '{}'",
+      "expected_exit_code": 0,
+      "expected_stdout_contains": [
+        "reference file not in MEMORY.md index",
+        "reference_test_engagement.md"
+      ]
+    },
+    {
+      "label": "H2: auto-indexer appends stub to MEMORY.md for unindexed file",
+      "command": "mkdir -p /tmp/mgs_ai/.claude/projects/-Users-viresha-gokul-os/memory && echo '# Memory Index' > /tmp/mgs_ai/.claude/projects/-Users-viresha-gokul-os/memory/MEMORY.md && touch /tmp/mgs_ai/.claude/projects/-Users-viresha-gokul-os/memory/reference_zoho_mcp.md && HOME=/tmp/mgs_ai python3 ~/gokul-os/.claude/hooks/memory-gap-surface.py <<< '{}' && grep 'AUTO-INDEXED' /tmp/mgs_ai/.claude/projects/-Users-viresha-gokul-os/memory/MEMORY.md",
+      "expected_exit_code": 0,
+      "expected_stdout_contains": [
+        "AUTO-INDEXED"
+      ]
+    },
+    {
+      "label": "H3: surfaces COMPLETED items not found in memory files",
+      "command": "mkdir -p /tmp/mgs_h3/.claude/status /tmp/mgs_h3/.claude/memory /tmp/mgs_h3/.claude/projects/-Users-viresha-gokul-os/memory && echo '# Memory Index' > /tmp/mgs_h3/.claude/projects/-Users-viresha-gokul-os/memory/MEMORY.md && printf '## COMPLETED THIS SESSION\\n- ✅ Confirmed GitLab PAT rotation deadline for 2026-09-01\\n' > /tmp/mgs_h3/.claude/status/SESSION_HANDOFF.md && HOME=/tmp/mgs_h3 python3 ~/gokul-os/.claude/hooks/memory-gap-surface.py <<< '{}'",
+      "expected_exit_code": 0,
+      "expected_stdout_contains": [
+        "COMPLETED item may lack memory write"
+      ]
+    },
+    {
+      "label": "exits 0 when MEMORY.md missing entirely (graceful)",
+      "command": "HOME=/tmp/mgs_nomem python3 ~/gokul-os/.claude/hooks/memory-gap-surface.py <<< '{}'; echo exitcode=$?",
+      "expected_exit_code": 0,
+      "expected_stdout_contains": [
+        "exitcode=0"
+      ]
+    },
+    {
+      "label": "H1: detects MCP resource ID in NDJSON sidecar",
+      "command": "mkdir -p /tmp/mgs_h1/.claude/projects/-Users-viresha-gokul-os/memory /tmp/mgs_h1/.claude/scratch && echo '# Memory Index' > /tmp/mgs_h1/.claude/projects/-Users-viresha-gokul-os/memory/MEMORY.md && printf '%s\n' '{\"tool\": \"mcp__google_workspace__create_spreadsheet\", \"result\": \"{\\\"spreadsheetId\\\": \\\"abc123def456\\\", \\\"title\\\": \\\"Test\\\"}\", \"ts\": 1234567890}' > /tmp/mgs_h1/.claude/scratch/mcp-tool-results.jsonl && HOME=/tmp/mgs_h1 python3 ~/gokul-os/.claude/hooks/memory-gap-surface.py <<< '{}'",
+      "expected_exit_code": 0,
+      "expected_stdout_contains": [
+        "MCP resource ID detected"
+      ]
+    },
+    {
+      "label": "mcp-result-logger: writes valid NDJSON to sidecar for mcp__ tool",
+      "command": "mkdir -p /tmp/mgs_logger/.claude/scratch && rm -f /tmp/mgs_logger/.claude/scratch/mcp-tool-results.jsonl && python3 -c 'import json,sys; sys.stdout.write(json.dumps({\"tool_name\":\"mcp__google_workspace__create_spreadsheet\",\"tool_input\":{},\"tool_result\":\"{\\\"spreadsheetId\\\":\\\"abc123\\\"}\"}))'  | HOME=/tmp/mgs_logger python3 ~/gokul-os/.claude/hooks/mcp-result-logger.py && python3 -c 'import json; obj=json.loads(open(\"/tmp/mgs_logger/.claude/scratch/mcp-tool-results.jsonl\").readline()); print(obj[\"tool\"]); assert \"spreadsheetId\" in obj[\"result\"]; print(\"NDJSON_VALID\")'",
+      "expected_exit_code": 0,
+      "expected_stdout_contains": [
+        "mcp__google_workspace__create_spreadsheet",
+        "NDJSON_VALID"
+      ]
+    }
+  ],
+  "starter_kit_status": "pending"
+}
