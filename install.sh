@@ -16,9 +16,16 @@
 
 set -e
 
+# ── Dependency check ──────────────────────────────────────────────────────────
+if ! command -v jq &>/dev/null; then
+  echo "ERROR: jq is required. Install with: brew install jq"
+  exit 1
+fi
+
 TEMPLATES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NON_INTERACTIVE=false
 PRINT_PLAN=false
+UPGRADE_MODE=false
 
 # ── Parse flags ───────────────────────────────────────────────────────────────
 
@@ -27,10 +34,123 @@ for arg in "$@"; do
   case "$arg" in
     --non-interactive) NON_INTERACTIVE=true ;;
     --print-plan)      PRINT_PLAN=true; NON_INTERACTIVE=true ;;
+    --upgrade)         UPGRADE_MODE=true ;;
     *) POSITIONAL+=("$arg") ;;
   esac
 done
 set -- "${POSITIONAL[@]}"
+
+# ── Upgrade mode: early-exit before project info collection ──────────────────
+
+merge_settings() {
+  local template_settings="$1"
+  local project_settings="$2"
+  local backup="${project_settings}.backup-$(date +%Y%m%d)"
+
+  # Backup existing
+  trap 'rm -f "${project_settings}.tmp"' ERR
+  cp "$project_settings" "$backup"
+  echo "  ✓ Backed up settings.json → $(basename "$backup")"
+
+  # Merge: union permissions.allow, append missing hook groups by command basename
+  jq -s '
+    .[0] as $user | .[1] as $tmpl |
+    ($user.permissions.allow + $tmpl.permissions.allow | unique) as $merged_allow |
+    reduce ($tmpl.hooks // {} | to_entries[]) as $entry (
+      $user;
+      .hooks[$entry.key] = (
+        ($user.hooks[$entry.key] // []) +
+        ($entry.value | map(
+          . as $tmpl_group |
+          ($user.hooks[$entry.key] // []) |
+          map(.hooks // [] | map(.command | split("/") | last)) | flatten as $user_basenames |
+          $tmpl_group |
+          select(
+            (.hooks // [] | map(.command | split("/") | last) | any(. as $b | $user_basenames | any(. == $b))) | not
+          )
+        ))
+      )
+    ) |
+    .permissions.allow = $merged_allow
+  ' "$project_settings" "$template_settings" > "${project_settings}.tmp"
+
+  mv "${project_settings}.tmp" "$project_settings"
+  echo "  ✓ Merged settings.json (backup kept at $(basename "$backup"))"
+}
+
+run_upgrade() {
+  local project_path="$1"
+
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "UPGRADE MODE"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+  if [[ ! -f "$project_path/KIT_VERSION" ]]; then
+    echo "  ⚠️  No KIT_VERSION found — this may be a very old install or a manual setup."
+    echo "  Proceeding with upgrade anyway."
+  else
+    local installed_version
+    installed_version=$(cat "$project_path/KIT_VERSION")
+    local current_version
+    current_version=$(cat "$TEMPLATES_DIR/KIT_VERSION")
+    echo "  Installed: $installed_version"
+    echo "  Current:   $current_version"
+  fi
+
+  echo ""
+  echo "Upgrading hooks..."
+  cp "$TEMPLATES_DIR/hooks/"*.py "$project_path/.claude/hooks/" 2>/dev/null || true
+  echo "  ✓ Hooks updated"
+
+  echo "Upgrading commands..."
+  cp "$TEMPLATES_DIR/commands/"*.md "$project_path/.claude/commands/" 2>/dev/null || true
+  echo "  ✓ Commands updated"
+
+  echo "Upgrading scripts..."
+  cp "$TEMPLATES_DIR/scripts/"*.py "$project_path/.claude/scripts/" 2>/dev/null || true
+  cp "$TEMPLATES_DIR/scripts/"*.sh "$project_path/.claude/scripts/" 2>/dev/null || true
+  echo "  ✓ Scripts updated"
+
+  echo "Merging settings.json..."
+  local template_settings="$TEMPLATES_DIR/config/settings.json"
+  local project_settings="$project_path/.claude/settings.json"
+  if [[ -f "$project_settings" ]] && [[ -f "$template_settings" ]]; then
+    local tmp_template
+    tmp_template=$(mktemp)
+    cp "$template_settings" "$tmp_template"
+    sed -i.bak "s|{{PROJECT_PATH}}|$project_path|g" "$tmp_template"
+    merge_settings "$tmp_template" "$project_settings"
+    rm -f "$tmp_template" "${tmp_template}.bak"
+  else
+    echo "  ⚠️  settings.json not found in project — skipping merge"
+  fi
+
+  echo "Updating KIT_VERSION..."
+  cp "$TEMPLATES_DIR/KIT_VERSION" "$project_path/KIT_VERSION"
+  echo "  ✓ KIT_VERSION updated"
+
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "UPGRADE COMPLETE"
+  echo "Next: run 'bash score-starter-kit.sh' to verify your installation"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+}
+
+if [[ "$UPGRADE_MODE" == true ]]; then
+  if [[ -n "${1:-}" ]]; then
+    UPGRADE_TARGET="$1"
+  else
+    read -rp "Path to existing project to upgrade: " UPGRADE_TARGET
+  fi
+  UPGRADE_TARGET="${UPGRADE_TARGET/#\~/$HOME}"
+  if [[ ! -d "$UPGRADE_TARGET/.claude" ]]; then
+    echo "ERROR: '$UPGRADE_TARGET' does not look like a Claude Code Starter Kit project (no .claude/ directory)"
+    exit 1
+  fi
+  run_upgrade "$UPGRADE_TARGET"
+  exit 0
+fi
 
 # ── 1. Collect project info ───────────────────────────────────────────────────
 
@@ -82,11 +202,11 @@ if [[ "$PRINT_PLAN" == true ]]; then
   echo "  Templates    : $TEMPLATES_DIR"
   echo ""
   echo "Would create directories:"
-  echo "  $PROJECT_PATH/.claude/{commands,hooks,agents,rules,memory,scratch,status,sessions,scripts}"
+  echo "  $PROJECT_PATH/.claude/{commands,hooks,agents,rules,memory,scratch,status,sessions,scripts,tests}"
   echo "  $PROJECT_PATH/knowledge/{wiki,claude-ops,projects}"
   echo ""
   echo "Would copy and patch:"
-  echo "  commands/*.md  hooks/*.py  agents/*.md  rules/*.md  scripts/*.py"
+  echo "  commands/*.md  hooks/*.py  agents/*.md  rules/*.md  scripts/*.py  scripts/*.sh  tests/fixtures/*.json"
   echo "  .claude/settings.json  infra-config.json  CLAUDE.md  REPO_MAP.md  SETUP_PHASES.md"
   echo "  weekly-health-checklist.md  README.md  score-starter-kit.sh"
   echo ""
@@ -126,6 +246,9 @@ dirs=(
   ".claude/status"
   ".claude/sessions"
   ".claude/scripts"
+  ".claude/tests"
+  ".claude/tests/fixtures"
+  ".claude/tests/results"
   "knowledge"
   "knowledge/wiki"
   "knowledge/claude-ops"
@@ -221,13 +344,29 @@ SCRIPTS_SRC="$TEMPLATES_DIR/scripts"
 SCRIPTS_DST="$PROJECT_PATH/.claude/scripts"
 
 if [[ -d "$SCRIPTS_SRC" ]]; then
-  for src in "$SCRIPTS_SRC"/*.py; do
+  for src in "$SCRIPTS_SRC"/*.py "$SCRIPTS_SRC"/*.sh; do
     [[ -f "$src" ]] || continue
     fname="$(basename "$src")"
     dst="$SCRIPTS_DST/$fname"
     cp "$src" "$dst"
     chmod +x "$dst"
     echo "  ✓ scripts/$fname"
+  done
+fi
+
+# ── 8b. Copy test fixtures ───────────────────────────────────────────────────
+
+FIXTURES_SRC="$TEMPLATES_DIR/.claude/tests/fixtures"
+FIXTURES_DST="$PROJECT_PATH/.claude/tests/fixtures"
+
+if [[ -d "$FIXTURES_SRC" ]]; then
+  for src in "$FIXTURES_SRC"/*.json; do
+    [[ -f "$src" ]] || continue
+    fname="$(basename "$src")"
+    dst="$FIXTURES_DST/$fname"
+    cp "$src" "$dst"
+    replace_placeholders "$dst"
+    echo "  ✓ tests/fixtures/$fname"
   done
 fi
 
@@ -251,6 +390,12 @@ if [[ -d "$CONFIG_SRC" ]]; then
     replace_placeholders "$dst"
     echo "  ✓ infra-config.json"
   fi
+fi
+
+# KIT_VERSION → project root (enables upgrade detection)
+if [[ -f "$TEMPLATES_DIR/KIT_VERSION" ]]; then
+  cp "$TEMPLATES_DIR/KIT_VERSION" "$PROJECT_PATH/KIT_VERSION"
+  echo "  ✓ KIT_VERSION"
 fi
 
 # ── 9. Copy CLAUDE.md and REPO_MAP.md ────────────────────────────────────────

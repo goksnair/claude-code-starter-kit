@@ -1,0 +1,34 @@
+{
+  "feature": "upgrade-path",
+  "plan": "starter-kit-upgrade-system",
+  "type": "script",
+  "description": "install.sh --upgrade backs up settings.json, merges new hooks, preserves user customizations",
+  "installed": "2026-08-16",
+  "starter_kit_status": "ported",
+  "eval_checks": [
+    {
+      "check": "install.sh accepts --upgrade flag without error",
+      "type": "content_contains",
+      "path": "infra/templates/install.sh",
+      "pattern": "--upgrade"
+    },
+    {
+      "check": "upgrade creates backup of settings.json",
+      "type": "content_contains",
+      "path": "infra/templates/install.sh",
+      "pattern": "settings.json.backup"
+    },
+    {
+      "check": "upgrade uses jq to merge hooks",
+      "type": "content_contains",
+      "path": "infra/templates/install.sh",
+      "pattern": "jq"
+    },
+    {
+      "check": "upgrade updates KIT_VERSION",
+      "type": "content_contains",
+      "path": "infra/templates/install.sh",
+      "pattern": "KIT_VERSION"
+    }
+  ]
+}

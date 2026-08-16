@@ -1,0 +1,12 @@
+{
+  "feature": "bash-tool-guard",
+  "hook_path": "{{PROJECT_PATH}}/.claude/hooks/bash-tool-guard.py",
+  "description": "Flags shell commands that have dedicated tool equivalents",
+  "test_cases": [
+    {
+      "label": "empty input passes through",
+      "stimulus": {},
+      "expected_exit_code": 0
+    }
+  ]
+}

@@ -46,6 +46,12 @@
             "command": "python3 {{PROJECT_PATH}}/.claude/hooks/url-capture.py",
             "timeout": 5,
             "async": true
+          },
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/workflow-injector.py",
+            "timeout": 5,
+            "async": true
           }
         ]
       }
@@ -214,6 +220,12 @@
             "type": "command",
             "command": "python3 {{PROJECT_PATH}}/.claude/hooks/learn-rule-extractor.py",
             "timeout": 5,
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/implementation-audit.py",
+            "timeout": 10,
             "async": true
           }
         ]

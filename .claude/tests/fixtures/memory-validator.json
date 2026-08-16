@@ -1,0 +1,12 @@
+{
+  "feature": "memory-validator",
+  "hook_path": "{{PROJECT_PATH}}/.claude/hooks/memory-validator.py",
+  "description": "Validates memory writes go to correct paths",
+  "test_cases": [
+    {
+      "label": "empty input passes through",
+      "stimulus": {},
+      "expected_exit_code": 0
+    }
+  ]
+}

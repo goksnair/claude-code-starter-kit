@@ -9,7 +9,7 @@ a /copy-check run in the same session.
 Why: copy-quality-guard.py fires on Write/Edit to files. Most inline content
 bypasses the file-path hook. Subagents dispatched via Task() write to separate
 transcripts that the main Stop hook can't see — but their output lands in known
-locations (.claude/scratch/, project outputs/) which we can scan here.
+locations (~/.claude/scratch/, engagement outputs/) which we can scan here.
 
 Non-blocking (warns, does not exit 2) — we can't block content already shown.
 
@@ -23,8 +23,6 @@ import re
 import sys
 import time
 from pathlib import Path
-
-PROJECT_ROOT = os.environ.get("PROJECT_ROOT", os.getcwd())
 
 # Signals in assistant text that suggest customer-facing content was generated
 CONTENT_SIGNALS = [
@@ -50,6 +48,7 @@ CONTENT_SIGNALS = [
     r"executive\s+summary",
     r"scope\s+of\s+work",
     r"deliverable[s]?\s*:",
+    r"investment\s*:\s*[₹\$£€]",
     r"proposed\s+(timeline|budget|solution)",
     # Website/landing page signals
     r"above\s+the\s+fold",
@@ -76,9 +75,16 @@ COPY_CHECK_SIGNALS = [
 ]
 COPY_CHECK_RE = re.compile("|".join(COPY_CHECK_SIGNALS), re.IGNORECASE)
 
+# Paths to skip when scanning (internal/infra content)
+SKIP_PATHS = [
+    ".claude/", "knowledge/", "scripts/", ".py", ".json", ".sh",
+    "SESSION_HANDOFF", "CURRENT_STATE", "AGENT_STATE", "SCRATCHPAD",
+    "career.md", "goals.md",
+]
+
 # Subagent output directories to scan for recently-written .md files
 SUBAGENT_OUTPUT_DIRS = [
-    os.path.join(PROJECT_ROOT, ".claude", "scratch"),
+    os.path.expanduser("~/.claude/scratch"),
 ]
 
 # Subagent output files to always skip (infra, not content)
@@ -147,26 +153,33 @@ def content_generated(text: str) -> list[str]:
     matches = []
     for signal in CONTENT_SIGNALS:
         if re.search(signal, text, re.IGNORECASE):
+            # Extract a readable label from the regex
             label = signal.replace(r"\s*", " ").replace(r"\s+", " ").replace(r"\S", "…").replace(r"\w+", "…").replace("(?:", "").replace(")", "").split("|")[0][:50]
             matches.append(label.strip())
     return matches[:3]  # cap at 3 signal examples
 
 
-def scan_subagent_outputs() -> tuple[str, list[str]]:
+def scan_subagent_outputs(active_engagement_path: str | None) -> tuple[str, list[str]]:
     """
     Scan recent subagent output .md files for content signals.
     Returns (combined_text, list_of_flagged_filenames).
     """
+    dirs_to_scan = list(SUBAGENT_OUTPUT_DIRS)
+    if active_engagement_path:
+        dirs_to_scan.append(os.path.join(active_engagement_path, "outputs"))
+
     now = time.time()
     flagged_files = []
     all_text_parts = []
 
-    for dir_path in SUBAGENT_OUTPUT_DIRS:
+    for dir_path in dirs_to_scan:
         d = Path(dir_path)
         if not d.exists():
             continue
         for f in d.glob("*.md"):
             if f.name in SUBAGENT_SKIP_FILES:
+                continue
+            if any(skip in f.name for skip in ("agent-health", "GRAPH_REPORT")):
                 continue
             try:
                 age = now - f.stat().st_mtime
@@ -180,6 +193,26 @@ def scan_subagent_outputs() -> tuple[str, list[str]]:
                 continue
 
     return "\n".join(all_text_parts), flagged_files
+
+
+def get_active_engagement_path(data: dict) -> str | None:
+    """Read active engagement path from AGENT_STATE if available."""
+    try:
+        state_path = os.path.expanduser("~/.claude/scratch/AGENT_STATE.json")
+        with open(state_path) as f:
+            state = json.load(f)
+        # Schema 2.1: fields nested under sessions.<id>; 2.0: top-level
+        version = state.get("_schema_version", "2.0")
+        if version == "2.1":
+            sessions = state.get("sessions", {})
+            sid = next(iter(sessions), None)
+            sdata = sessions.get(sid, {}) if sid else {}
+        else:
+            sdata = state
+        engagement = sdata.get("active_engagement") or {}
+        return engagement.get("path")
+    except Exception:
+        return None
 
 
 def main():
@@ -206,7 +239,8 @@ def main():
             transcript_signals = content_generated(assistant_text)
 
     # --- Check 2: subagent output files ---
-    subagent_text, flagged_files = scan_subagent_outputs()
+    active_path = get_active_engagement_path(data)
+    subagent_text, flagged_files = scan_subagent_outputs(active_path)
     subagent_signals = content_generated(subagent_text) if subagent_text else []
 
     # Nothing found in either place

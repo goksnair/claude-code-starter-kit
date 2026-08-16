@@ -1,5 +1,7 @@
 # Claude Code Starter Kit
 
+**Kit version:** see `KIT_VERSION` in your project root | [Upgrade guide](UPGRADE.md) | [Changelog](CHANGELOG.md)
+
 ## What it is
 
 > **Claude Code agent?** Read [`REPO_MAP.md`](REPO_MAP.md) first, then run `/onboard`.
@@ -14,11 +16,13 @@ Works with Claude Code in terminal, VS Code, Cursor, JetBrains, or any IDE with 
 
 | Category | Count | Purpose |
 |----------|-------|---------|
-| Hooks | 23 | Automate session hygiene, guard drift, enforce memory routing |
-| Commands | 50+ | /work, /start, /pivot, /checkpoint, /copy-check, /humanize... |
+| Hooks | 25 | Automate session hygiene, guard drift, enforce memory routing |
+| Commands | 28 | /work, /start, /pivot, /checkpoint, /copy-check, /humanize... |
 | Agents | 10 | PE, coordinator, research, code-review, security, chief-of-staff... |
 | Memory files | 5 | STATUS.md, goals.md, SESSION_HANDOFF.md, CURRENT_STATE.md, AGENT_STATE.json |
 | Rules | 2 | execution.md, memory.md — behavioral constraints for Claude |
+| Scripts | 3 | session-index.py, check-hooks-exist.sh, run-fixture-tests.py |
+| Test fixtures | 3 | Sample SDLC test cases for hooks |
 | Config | 2 | settings.json (hook wiring), infra-config.json (brand customization) |
 
 ---
@@ -269,10 +273,10 @@ Claude remembers things across sessions through 5 files:
 | Event | Hooks | What they catch |
 |-------|-------|-----------------|
 | SessionStart | session-start.py, context-load.py | Deadline warnings, stale memory |
-| UserPromptSubmit | bash-tool-guard.py, large-file-guard.py | Tool discipline, context budget |
+| UserPromptSubmit | bash-tool-guard.py, large-file-guard.py, workflow-injector.py | Tool discipline, context budget, research workflow hints |
 | PreToolUse | memory-validator.py, content-output-guard.py | Wrong-path writes, output cap |
 | PostToolUse | doc-governance.py, wiki-lint-check.py, git-recent-wins.py | Doc quality, wiki drift, wins log |
-| Stop | session-persist.py, work-pipeline-guard.py, learn-rule-extractor.py | Turn count, pipeline audit, rule extraction |
+| Stop | session-persist.py, work-pipeline-guard.py, learn-rule-extractor.py, implementation-audit.py | Turn count, pipeline audit, rule extraction, untested infra warning |
 | PreCompact | pre-compact-backup.py, stale-template-check.py | Backup, template drift |
 
 ---
@@ -299,9 +303,63 @@ Claude remembers things across sessions through 5 files:
 
 ---
 
+## Test infrastructure
+
+The kit includes an SDLC test harness for validating hooks after customization.
+
+### Validate hooks are wired correctly
+
+```bash
+bash scripts/check-hooks-exist.sh
+```
+
+Checks every hook referenced in `settings.json` exists on disk and is executable.
+
+### Run fixture tests
+
+```bash
+python3 scripts/run-fixture-tests.py
+```
+
+Reads `.claude/tests/fixtures/*.json` and runs each test case against its target hook. Reports pass/fail with a summary.
+
+### Adding your own fixtures
+
+Create a JSON file in `.claude/tests/fixtures/` with this structure:
+
+```json
+{
+  "feature": "your-hook-name",
+  "hook_path": "{{PROJECT_PATH}}/.claude/hooks/your-hook-name.py",
+  "test_cases": [
+    {
+      "label": "describe what this tests",
+      "stimulus": {},
+      "expected_exit_code": 0
+    }
+  ]
+}
+```
+
+---
+
 ## /work pipeline
 
 The `/work` command routes every task through a structured pipeline: (1) Prompt Engineer agent reads your directive and produces a structured WorkOrder; (2) the WorkOrder is validated against hard-stop rules; (3) the right specialist agent executes it; (4) a GATE-2 review confirms the work meets done criteria before committing. This prevents ad-hoc execution and ensures every task has verifiable output.
+
+---
+
+## Upgrading
+
+If you have an existing installation, do not re-run `install.sh` without the `--upgrade` flag — it will overwrite your `settings.json`.
+
+**Safe upgrade:**
+
+```bash
+bash install.sh --upgrade ~/path/to/your-project
+```
+
+See [UPGRADE.md](UPGRADE.md) for full instructions including manual upgrade for pre-2026-08-16 installs.
 
 ---
 

@@ -1,0 +1,27 @@
+{
+  "feature": "kit-version",
+  "plan": "starter-kit-upgrade-system",
+  "type": "script",
+  "description": "KIT_VERSION file is present in templates and is copied to project on install",
+  "installed": "2026-08-16",
+  "starter_kit_status": "ported",
+  "eval_checks": [
+    {
+      "check": "KIT_VERSION exists in templates",
+      "type": "file_exists",
+      "path": "infra/templates/KIT_VERSION"
+    },
+    {
+      "check": "KIT_VERSION is non-empty",
+      "type": "content_contains",
+      "path": "infra/templates/KIT_VERSION",
+      "pattern": "20"
+    },
+    {
+      "check": "install.sh copies KIT_VERSION to project",
+      "type": "content_contains",
+      "path": "infra/templates/install.sh",
+      "pattern": "KIT_VERSION"
+    }
+  ]
+}

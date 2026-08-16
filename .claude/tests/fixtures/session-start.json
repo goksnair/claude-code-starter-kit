@@ -1,0 +1,12 @@
+{
+  "feature": "session-start",
+  "hook_path": "{{PROJECT_PATH}}/.claude/hooks/session-start.py",
+  "description": "Fires at session start to load context and surface deadlines",
+  "test_cases": [
+    {
+      "label": "empty input passes through",
+      "stimulus": {},
+      "expected_exit_code": 0
+    }
+  ]
+}
