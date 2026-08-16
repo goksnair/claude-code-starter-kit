@@ -201,7 +201,16 @@ DIM_NAMES[7]="README quality"
 README="$INSTALL_PATH/README.md"
 if [[ -f "$README" ]]; then
   LINE_COUNT=$(wc -l < "$README" | tr -d ' ')
-  if [[ $LINE_COUNT -gt 100 ]]; then
+  if [[ $LINE_COUNT -gt 300 ]]; then
+    HAS_QS=$(grep -ci '## .*install' "$README" 2>/dev/null || true)
+    HAS_WI=$(grep -ci "## .*what.*included" "$README" 2>/dev/null || true)
+    HAS_CMD=$(grep -ci '## .*command' "$README" 2>/dev/null || true)
+    if [[ "$HAS_QS" -gt 0 && "$HAS_WI" -gt 0 && "$HAS_CMD" -gt 0 ]]; then
+      record 7 10 "README.md $LINE_COUNT lines with all required sections"
+    else
+      record 7 9 "README.md exists, $LINE_COUNT lines"
+    fi
+  elif [[ $LINE_COUNT -gt 100 ]]; then
     record 7 9 "README.md exists, $LINE_COUNT lines"
   else
     record 7 5 "README.md exists but only $LINE_COUNT lines (<100)"
@@ -217,7 +226,10 @@ CLAUDE_MD="$INSTALL_PATH/CLAUDE.md"
 set +e
 if [[ -f "$CLAUDE_MD" ]]; then
   HAS_PLACEHOLDER=$(grep -c '{{PROJECT_NAME}}' "$CLAUDE_MD" 2>/dev/null || true)
-  if [[ "$HAS_PLACEHOLDER" -eq 0 ]]; then
+  HAS_SESSION_START=$(grep -c '## Session Start' "$CLAUDE_MD" 2>/dev/null || true)
+  if [[ "$HAS_PLACEHOLDER" -eq 0 && "$HAS_SESSION_START" -gt 0 ]]; then
+    record 8 10 "CLAUDE.md substituted with Session Start section"
+  elif [[ "$HAS_PLACEHOLDER" -eq 0 ]]; then
     record 8 9 "CLAUDE.md exists and {{PROJECT_NAME}} is substituted"
   else
     record 8 4 "CLAUDE.md exists but {{PROJECT_NAME}} not substituted"
