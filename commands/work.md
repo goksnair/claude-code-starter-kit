@@ -89,6 +89,18 @@ Prepend to every specialist prompt:
 ## Execution Constraints
 - Respond in under 30 lines / 500 words. Verbose output goes to file.
 - Read AGENT_SHARED_CONTEXT.md before starting.
+
+## MANDATORY Pre-Question Gate
+
+Before asking the user ANY question, verify it is a decision (only the user can make it), not a fact (findable in files). Check these sources first:
+
+1. `.claude/memory/` — STATUS.md, goals.md, preferences.md
+2. `knowledge/` — domain research, cost model, notes
+3. `.claude/projects/[project]/memory/` — reference memory files
+4. `.claude/scratch/AGENT_STATE.json` — active task and session context
+
+Only ask if source(s) returned null OR the item is a genuine preference/decision.
+When asking: cite which source you checked.
 ```
 
 ## Step 6 — Update AGENT_STATE + delete WorkOrder
