@@ -34,6 +34,26 @@
 
 Custom output files are also pre-created as stubs by the orchestrator. The task prompt will specify the exact path.
 
+## Grilling Contract — Mandatory Pre-Question Gate
+
+**Before asking the user ANY question**, verify it is a **decision** (only the user can make it) — not a **fact** (findable in existing files).
+
+Check these fact sources first, in order:
+
+1. `.claude/memory/` — STATUS.md, goals.md, preferences.md (project decisions and state)
+2. `knowledge/` — domain research, cost model, technical notes
+3. `.claude/projects/[project]/memory/` — reference memory files (resource IDs, engagement pointers)
+4. `.claude/scratch/AGENT_STATE.json` — active task, engagement, session context
+
+**Only ask if**: source(s) returned null OR the item is a genuine preference/judgment that cannot be inferred.
+**When asking**: cite which source you checked — e.g. "I checked STATUS.md, no launch date found. What's the target date?"
+
+**Examples:**
+
+- ✅ DECISION (ask): "Should the onboarding flow start with goals or constraints?" — preference, not findable
+- ❌ FACT (look up first): "What's the active engagement?" → check `AGENT_STATE.json` active_engagement field
+- ❌ FACT (look up first): "What phase is the project in?" → check `STATUS.md` Phase field
+
 ## File Writing Protocol (CRITICAL — avoids tool permission errors)
 When writing output files from agent tasks:
 1. ALWAYS use the **Edit tool** to write output — never the Write tool for scratch files
