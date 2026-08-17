@@ -79,9 +79,38 @@ If a task is in progress at session end, its status MUST be written before closi
 - Blocked: write to STATUS.md or relevant knowledge file with blocker detail
 - Done: write the outcome to the right memory or knowledge file
 
+## Human-Only Commands — Agents Must Never Invoke These [behavioral]
+
+The following commands are **human-invoked only**. Agents, cron scripts, and autonomous pipelines must never dispatch them:
+
+| Command | Why human-only |
+|---------|---------------|
+| `/start` | Loads full session context — should only run once per session at open |
+| `/pivot` | Switches persona/project context — agents cannot consent to a context change |
+| `/decide` | High-stakes irreversible decisions — requires human intent |
+| `/end` | Session close — requires human to provide next-task answer |
+
+**Enforcement**: The `/work` WORKORDER validation rejects any WorkOrder whose `structured_prompt` invokes one of the above. Return: `⛔ HUMAN-ONLY COMMAND — [name] cannot be dispatched by agents`
+
+## Phase Boundary Decision Protocol [behavioral]
+
+At every logical phase transition (specialist completed, GATE-2 fired, or a natural unit of work done), choose the **first option that fits** — in this order:
+
+1. **continue** — fewer than 5 turns remain AND next action is in the same phase
+2. **/clear** — starting a completely unrelated task in the same session
+3. **/handoff** — next phase needs a different context or agent
+4. **subagent Task** — scoped subproblem inside the current phase that's parallel-safe
+5. **/compact** — last resort, or auto-safety at turn 12+
+
+**Mid-phase rule**: Never trigger /compact mid-thought. Split remainder into a subagent Task instead.
+
+**Safety net**: Turn 12+ still auto-triggers /compact. The phase boundary protocol governs *proactive* transitions; turn-count governs *reactive* safety.
+
 ## Non-Negotiable Summary
 
 1. Run `/start` once per session
 2. All decisions live in `.claude/memory/` — never in conversation only
-3. `/compact` at turn 10–12 with focus instruction
+3. `/compact` at turn 12+ OR at a natural phase boundary (whichever comes first)
 4. Every `/work` task goes through PE + specialist — no inline execution by main session
+
+See Grilling Contract in `agents/AGENT_SHARED_CONTEXT.md` — mandatory pre-question gate for all agents.
