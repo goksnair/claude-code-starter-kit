@@ -6,7 +6,7 @@
 
 > **Claude Code agent?** Read [`REPO_MAP.md`](REPO_MAP.md) first, then run `/onboard`.
 
-Claude Code Starter Kit gives any Claude user a production-ready AI workspace in under 5 minutes. It installs a 25-hook automation system, 28 slash commands, 10 specialist agents, and a structured memory architecture — so Claude remembers context across sessions, enforces quality, and routes tasks to the right specialist automatically.
+Claude Code Starter Kit gives any Claude user a production-ready AI workspace in under 5 minutes. It installs a 30-hook automation system, 28 slash commands, 10 specialist agents, and a structured memory architecture — so Claude remembers context across sessions, enforces quality, and routes tasks to the right specialist automatically.
 
 Works with Claude Code in terminal, VS Code, Cursor, JetBrains, or any IDE with the Claude extension.
 
@@ -16,7 +16,7 @@ Works with Claude Code in terminal, VS Code, Cursor, JetBrains, or any IDE with 
 
 | Category | Count | Purpose |
 |----------|-------|---------|
-| Hooks | 25 | Automate session hygiene, guard drift, enforce memory routing |
+| Hooks | 30 | Automate session hygiene, guard drift, enforce memory routing |
 | Commands | 28 | /work, /start, /pivot, /checkpoint, /copy-check, /humanize... |
 | Agents | 10 | PE, coordinator, research, code-review, security, chief-of-staff... |
 | Memory files | 5 | STATUS.md, goals.md, SESSION_HANDOFF.md, CURRENT_STATE.md, AGENT_STATE.json |
