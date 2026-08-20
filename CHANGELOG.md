@@ -1,6 +1,6 @@
 # Changelog
 
-## 2026-08-16 (current)
+## [0.2.0] 2026-08-16 (current)
 
 ### Added
 - `KIT_VERSION` file — enables upgrade detection and version tracking

@@ -16,8 +16,29 @@ import sys
 from pathlib import Path
 
 HOME = Path(os.path.expanduser("~"))
-# Resolve project path: CLAUDE_PROJECT_DIR env var (set by settings.json hooks) → cwd fallback
-_project_dir = Path(os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd()))
+
+
+def _resolve_project_dir() -> Path:
+    """Resolve the Claude project root via a three-step fallback chain:
+    1. CLAUDE_WORKSPACE_DIR env var (set by some Claude Code versions)
+    2. Walk up from cwd to find nearest dir containing .claude/ or .git/
+    3. cwd() as last resort
+    """
+    if "CLAUDE_WORKSPACE_DIR" in os.environ:
+        return Path(os.environ["CLAUDE_WORKSPACE_DIR"])
+    # Walk up from cwd looking for .claude/ or .git/
+    candidate = Path(os.getcwd())
+    for _ in range(10):
+        if (candidate / ".claude").is_dir() or (candidate / ".git").is_dir():
+            return candidate
+        parent = candidate.parent
+        if parent == candidate:
+            break
+        candidate = parent
+    return Path(os.getcwd())
+
+
+_project_dir = _resolve_project_dir()
 _proj_slug = "-".join(str(_project_dir).lstrip("/").split("/"))
 MEMORY_DIR = HOME / ".claude" / "projects" / _proj_slug / "memory"
 MEMORY_MD = MEMORY_DIR / "MEMORY.md"
@@ -116,7 +137,7 @@ def h3_handoff_decisions_without_memory_write() -> list:
         if line.strip() and re.match(r"^\s*[✅•-]", line)
     ]
 
-    memory_dir = PROJ / ".claude" / "memory"
+    memory_dir = _project_dir / ".claude" / "memory"
     if not memory_dir.exists():
         memory_dir = HOME / ".claude" / "memory"
     memory_text = ""
