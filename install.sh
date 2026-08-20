@@ -9,10 +9,16 @@
 #   bash install.sh --non-interactive MyOS ~/my-os "Jane Smith"
 #   bash install.sh --print-plan MyOS ~/my-os "Jane Smith" # dry-run, no writes
 #
+# Upgrade:
+#   bash install.sh --upgrade ~/my-os
+#   bash install.sh --upgrade --selective ~/my-os  # prompt before each net-new file
+#
 # Flags:
 #   --non-interactive   Skip all prompts. Requires PROJECT_NAME, PROJECT_PATH,
 #                       USER_NAME as positional args (after the flag).
 #   --print-plan        Print what would be installed and exit. No files written.
+#   --upgrade           Run upgrade mode on an existing project.
+#   --selective         (upgrade only) Prompt before copying each net-new file.
 
 set -e
 
@@ -26,6 +32,7 @@ TEMPLATES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NON_INTERACTIVE=false
 PRINT_PLAN=false
 UPGRADE_MODE=false
+SELECTIVE_MODE=false
 
 # ── Parse flags ───────────────────────────────────────────────────────────────
 
@@ -35,6 +42,7 @@ for arg in "$@"; do
     --non-interactive) NON_INTERACTIVE=true ;;
     --print-plan)      PRINT_PLAN=true; NON_INTERACTIVE=true ;;
     --upgrade)         UPGRADE_MODE=true ;;
+    --selective)       SELECTIVE_MODE=true ;;
     *) POSITIONAL+=("$arg") ;;
   esac
 done
@@ -99,14 +107,63 @@ run_upgrade() {
   fi
 
   echo ""
-  echo "Upgrading hooks..."
-  cp "$TEMPLATES_DIR/hooks/"*.py "$project_path/.claude/hooks/" 2>/dev/null || true
-  chmod +x "$project_path/.claude/hooks/"*.py 2>/dev/null || true
-  echo "  ✓ Hooks updated"
-
+  # T1 — Commands copy: diff before overwrite, skip existing
   echo "Upgrading commands..."
-  cp "$TEMPLATES_DIR/commands/"*.md "$project_path/.claude/commands/" 2>/dev/null || true
-  echo "  ✓ Commands updated"
+  mkdir -p "$project_path/.claude/commands"
+  for src in "$TEMPLATES_DIR/commands/"*.md; do
+    [[ -f "$src" ]] || continue
+    fname="$(basename "$src")"
+    dst="$project_path/.claude/commands/$fname"
+    if [[ -f "$dst" ]]; then
+      echo "  ↳ commands/$fname already exists — skipped"
+    else
+      if [[ "$SELECTIVE_MODE" == true ]]; then
+        read -rp "  Copy commands/$fname? [y/N] " _sel
+        [[ "$_sel" =~ ^[Yy]$ ]] || { echo "  ↳ commands/$fname skipped (selective)"; continue; }
+      fi
+      cp "$src" "$dst"
+      echo "  ✓ commands/$fname (net-new)"
+    fi
+  done
+
+  # T2 — Hooks copy: diff before overwrite, skip existing
+  echo "Upgrading hooks..."
+  mkdir -p "$project_path/.claude/hooks"
+  for src in "$TEMPLATES_DIR/hooks/"*.py; do
+    [[ -f "$src" ]] || continue
+    fname="$(basename "$src")"
+    dst="$project_path/.claude/hooks/$fname"
+    if [[ -f "$dst" ]]; then
+      echo "  ↳ hooks/$fname already exists — skipped"
+    else
+      if [[ "$SELECTIVE_MODE" == true ]]; then
+        read -rp "  Copy hooks/$fname? [y/N] " _sel
+        [[ "$_sel" =~ ^[Yy]$ ]] || { echo "  ↳ hooks/$fname skipped (selective)"; continue; }
+      fi
+      cp "$src" "$dst"
+      chmod +x "$dst"
+      echo "  ✓ hooks/$fname (net-new)"
+    fi
+  done
+
+  # T3 — Agents copy: add section, skip if exists (protect coordinator.md)
+  echo "Upgrading agents..."
+  mkdir -p "$project_path/.claude/agents"
+  for src in "$TEMPLATES_DIR/agents/"*.md; do
+    [[ -f "$src" ]] || continue
+    fname="$(basename "$src")"
+    dst="$project_path/.claude/agents/$fname"
+    if [[ -f "$dst" ]]; then
+      echo "  ↳ agents/$fname already exists — skipped (your version preserved)"
+    else
+      if [[ "$SELECTIVE_MODE" == true ]]; then
+        read -rp "  Copy agents/$fname? [y/N] " _sel
+        [[ "$_sel" =~ ^[Yy]$ ]] || { echo "  ↳ agents/$fname skipped (selective)"; continue; }
+      fi
+      cp "$src" "$dst"
+      echo "  ✓ agents/$fname (net-new)"
+    fi
+  done
 
   echo "Upgrading scripts..."
   cp "$TEMPLATES_DIR/scripts/"*.py "$project_path/.claude/scripts/" 2>/dev/null || true
@@ -125,6 +182,37 @@ run_upgrade() {
     rm -f "$tmp_template" "${tmp_template}.bak"
   else
     echo "  ⚠️  settings.json not found in project — skipping merge"
+  fi
+
+  # T4 — CLAUDE.md @-rules diff: suggest missing @-lines, no auto-write
+  echo "Checking CLAUDE.md @-rules..."
+  local template_claude="$TEMPLATES_DIR/CLAUDE.md"
+  local project_claude="$project_path/CLAUDE.md"
+  if [[ -f "$template_claude" ]] && [[ -f "$project_claude" ]]; then
+    local missing_rules
+    missing_rules=$(grep '^@' "$template_claude" | while IFS= read -r rule; do
+      if ! grep -qF "$rule" "$project_claude"; then
+        echo "  $rule"
+      fi
+    done)
+    if [[ -n "$missing_rules" ]]; then
+      echo "  ── Suggested additions to CLAUDE.md (not written automatically) ──"
+      echo "$missing_rules"
+      echo "  ── Add any of the above @-lines to $project_claude if desired ──"
+    else
+      echo "  ✓ CLAUDE.md @-rules are up to date"
+    fi
+  else
+    echo "  ↳ CLAUDE.md not found in template or project — skipping @-rules check"
+  fi
+
+  echo "Upgrading score-starter-kit.sh..."
+  if [[ ! -f "$project_path/score-starter-kit.sh" ]]; then
+    cp "$TEMPLATES_DIR/score-starter-kit.sh" "$project_path/score-starter-kit.sh"
+    chmod +x "$project_path/score-starter-kit.sh"
+    echo "  ✓ score-starter-kit.sh (net-new)"
+  else
+    echo "  ↳ score-starter-kit.sh already exists — skipped"
   fi
 
   echo "Updating KIT_VERSION..."

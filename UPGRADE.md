@@ -19,15 +19,30 @@ bash install.sh --upgrade ~/path/to/your-project
 
 This will:
 1. Back up your existing `.claude/settings.json` to `.claude/settings.json.backup-YYYYMMDD`
-2. Copy all updated hook `.py` files (your hooks directory is managed by the kit — customizations go in `settings.json`, not hook files)
-3. Merge new hooks and permissions into your `settings.json` — your custom entries are preserved
-4. Update `KIT_VERSION`
+2. Copy new command files (skips files you already have)
+3. Copy new hook `.py` files (skips files you already have)
+4. Copy new agent files (skips files you already have — your coordinator.md is never overwritten)
+5. Merge new hooks and permissions into your `settings.json` — your custom entries are preserved
+6. Copy `score-starter-kit.sh` if not present in your project
+7. Show suggested CLAUDE.md @-rules additions (does not auto-write)
+8. Update `KIT_VERSION`
 
 After upgrading, run the verification script:
 
 ```bash
-bash scripts/verify-install.sh
+bash score-starter-kit.sh
 ```
+
+## I already have a Claude Code setup (no KIT_VERSION)
+
+If you built your setup independently (custom /start, /work, /end, your own hooks), use this path:
+
+1. Run `bash detect-and-route.sh` to confirm your upgrade route
+2. Run `bash install.sh --upgrade --selective [your-project-path]` — copies only files you don't have, prompts before each
+3. Run `bash score-starter-kit.sh` to verify your setup score
+4. Review any CLAUDE.md @-rules suggestions printed during upgrade — add the ones you want manually
+
+Your existing commands, coordinator, and CLAUDE.md are never overwritten.
 
 ## Manual upgrade (pre-2026-08-16 installs — no KIT_VERSION file)
 
@@ -47,6 +62,16 @@ bash scripts/verify-install.sh
 - New hooks are added to your hooks directory automatically
 - Run `bash scripts/check-hooks-exist.sh` to confirm all hooks in settings.json exist on disk
 - Run `python3 scripts/run-fixture-tests.py --sync-check` to see if any new hooks need review
+
+## After upgrading: populate your memory files
+
+To set up structured memory after upgrading, run:
+
+```
+/onboard --from-project .
+```
+
+This scans your existing project and populates `goals.md` and `STATUS.md` without reinstalling anything.
 
 ## Rolling back
 

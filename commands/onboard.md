@@ -16,10 +16,10 @@ First-run setup command. Run this once when opening a fresh clone of the Claude 
 | Flag | Effect |
 |------|--------|
 | `--dry-run` | Print what would happen — no files written, no installs |
-| `--from-project <path>` | Scan an existing project at `<path>` to pre-populate memory |
-| `--questionnaire` | Skip project scan, go straight to 10-question discovery |
+| `--from-project <path>` | [optional] Scan an existing project at `<path>` to pre-populate memory |
+| `--questionnaire` | [optional] Skip project scan, go straight to 10-question discovery |
 
-If no flag is given, the onboarding-assistant will ask which path to take.
+If neither `--from-project` nor `--questionnaire` is given, Claude will auto-detect the best path (see Step 4).
 
 ---
 
@@ -95,7 +95,10 @@ Delegate to the onboarding-assistant agent with the appropriate mode:
 
 - If `--from-project <path>` was passed: run Path A (existing project scan)
 - If `--questionnaire` was passed: run Path B (10 questions)
-- If neither: ask the user which they prefer, then proceed
+- If neither:
+  - Check for signs of an existing project: does the current directory have `README.md`, `package.json`, or `CLAUDE.md`?
+  - If yes → default to Path A. Print: "I'll scan your current project at [pwd] — proceed with Path A? [Y/n]" Wait for confirmation. If user says n, fall back to Path B.
+  - If no signs of an existing project → default to Path B. Print: "No existing project detected — I'll run the questionnaire (Path B). Proceed? [Y/n]" Wait for confirmation.
 
 The onboarding-assistant handles the full discovery and memory population flow. It will ask questions, present drafts, and write files only after user confirmation.
 

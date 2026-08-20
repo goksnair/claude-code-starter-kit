@@ -2,12 +2,7 @@
 
 ## First Session? Run /onboard
 
-If any of these are true, run `/onboard` before anything else:
-- `.claude/memory/goals.md` does not exist or still contains `(fill in)` placeholders
-- `.claude/status/SESSION_HANDOFF.md` says "project initialized"
-- This is the first time Claude Code has opened this project
-
-`/onboard` will install the kit (if not done), ask about your use case, populate memory, verify the setup, and hand back to you. Then run `/start` to begin your first real session.
+Claude automatically detects your setup state. If `goals.md` contains placeholder text or `SESSION_HANDOFF.md` says "project initialized", `/onboard` will be triggered automatically at session start.
 
 If setup is already complete, skip to Session Start below.
 

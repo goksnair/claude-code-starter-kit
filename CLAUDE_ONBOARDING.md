@@ -4,6 +4,18 @@ You have completed `/onboard`. This document explains what was set up and how to
 
 ---
 
+## If you skipped /onboard
+
+If you set up Claude Code manually or cloned this kit without running `/onboard`, your memory files may contain placeholder text.
+
+To verify and fix:
+
+1. Run `bash score-starter-kit.sh` — this scores your setup health
+2. If score is below 95 or `goals.md` still says "(fill in)", run `/onboard --questionnaire` to populate memory files
+3. Then run `/start` to begin your first real session
+
+---
+
 ## What Was Set Up
 
 `install.sh` created the following structure in your project:
