@@ -1,0 +1,19 @@
+# Session and scratch files — never commit these
+.claude/scratch/AGENT_STATE.json
+.claude/scratch/WORKORDER.json
+.claude/scratch/mcp-tool-results.jsonl
+.claude/scratch/*.tmp
+.claude/sessions/
+.claude/tests/results/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
