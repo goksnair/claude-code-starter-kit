@@ -19,14 +19,22 @@ HOME = Path(os.path.expanduser("~"))
 
 
 def _resolve_project_dir() -> Path:
-    """Resolve the Claude project root via a three-step fallback chain:
-    1. CLAUDE_WORKSPACE_DIR env var (set by some Claude Code versions)
-    2. Walk up from cwd to find nearest dir containing .claude/ or .git/
-    3. cwd() as last resort
+    """Resolve the Claude project root reliably regardless of cwd.
+
+    Strategy: this file lives at <project>/.claude/hooks/<name>.py, so
+    __file__ is always 3 levels below the project root. Walk up from there.
+    Fall back to cwd-based walk-up if __file__ is somehow unavailable.
     """
-    if "CLAUDE_WORKSPACE_DIR" in os.environ:
-        return Path(os.environ["CLAUDE_WORKSPACE_DIR"])
-    # Walk up from cwd looking for .claude/ or .git/
+    # Primary: anchor on __file__ — hooks always live at .claude/hooks/
+    try:
+        hook_path = Path(__file__).resolve()
+        # .claude/hooks/<file> → parent = .claude/hooks → parent = .claude → parent = project
+        candidate = hook_path.parent.parent.parent
+        if (candidate / ".claude").is_dir():
+            return candidate
+    except Exception:
+        pass
+    # Fallback: walk up from cwd to nearest dir containing .claude/ or .git/
     candidate = Path(os.getcwd())
     for _ in range(10):
         if (candidate / ".claude").is_dir() or (candidate / ".git").is_dir():
