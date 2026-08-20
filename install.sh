@@ -273,6 +273,24 @@ else
   read -rp "Your name (e.g. Jane Smith): " USER_NAME
 fi
 
+if [[ -n "${4:-}" ]]; then
+  BRAND_NAME="$4"
+elif [[ "$NON_INTERACTIVE" == true ]]; then
+  BRAND_NAME="${PROJECT_NAME}"
+else
+  read -rp "Brand name (e.g. Jane's OS) [default: ${PROJECT_NAME}]: " BRAND_NAME
+  BRAND_NAME="${BRAND_NAME:-${PROJECT_NAME}}"
+fi
+
+if [[ -n "${5:-}" ]]; then
+  BRAND_VOICE="$5"
+elif [[ "$NON_INTERACTIVE" == true ]]; then
+  BRAND_VOICE="clear, direct, practical"
+else
+  read -rp "Brand voice (3-5 words, e.g. 'direct, practical, no fluff') [default: clear, direct, practical]: " BRAND_VOICE
+  BRAND_VOICE="${BRAND_VOICE:-clear, direct, practical}"
+fi
+
 if [[ -z "$PROJECT_NAME" || -z "$PROJECT_PATH" || -z "$USER_NAME" ]]; then
   echo "ERROR: PROJECT_NAME, PROJECT_PATH, and USER_NAME are required."
   exit 1
@@ -288,6 +306,8 @@ if [[ "$PRINT_PLAN" == true ]]; then
   echo "  Project name : $PROJECT_NAME"
   echo "  Project path : $PROJECT_PATH"
   echo "  User name    : $USER_NAME"
+  echo "  Brand name   : $BRAND_NAME"
+  echo "  Brand voice  : $BRAND_VOICE"
   echo "  Templates    : $TEMPLATES_DIR"
   echo ""
   echo "Would create directories:"
@@ -321,6 +341,8 @@ echo "Installing Claude Code Starter Kit"
 echo "  Project name : $PROJECT_NAME"
 echo "  Project path : $PROJECT_PATH"
 echo "  User name    : $USER_NAME"
+echo "  Brand name   : $BRAND_NAME"
+echo "  Brand voice  : $BRAND_VOICE"
 echo ""
 
 # ── 2. Create directory structure ─────────────────────────────────────────────
@@ -358,6 +380,8 @@ replace_placeholders() {
     -e "s|{{PROJECT_NAME}}|${PROJECT_NAME}|g" \
     -e "s|{{PROJECT_PATH}}|${PROJECT_PATH}|g" \
     -e "s|{{USER_NAME}}|${USER_NAME}|g" \
+    -e "s|{{BRAND_NAME}}|${BRAND_NAME}|g" \
+    -e "s|{{BRAND_VOICE}}|${BRAND_VOICE}|g" \
     -e "s|{{DATE}}|${TODAY}|g" \
     -e "s|{{VAULT_PATH}}|${HOME}/.vault|g" \
     "$file" > "$tmp" && mv "$tmp" "$file"
@@ -537,6 +561,13 @@ if [[ -f "$TEMPLATES_DIR/CLAUDE_ONBOARDING.md" ]]; then
   cp "$TEMPLATES_DIR/CLAUDE_ONBOARDING.md" "$dst"
   replace_placeholders "$dst"
   echo "  ✓ CLAUDE_ONBOARDING.md"
+fi
+
+if [[ -f "$TEMPLATES_DIR/CONTEXT.md" ]]; then
+  dst="$PROJECT_PATH/CONTEXT.md"
+  cp "$TEMPLATES_DIR/CONTEXT.md" "$dst"
+  replace_placeholders "$dst"
+  echo "  ✓ CONTEXT.md"
 fi
 
 # ── 11. Bootstrap memory files ────────────────────────────────────────────────

@@ -16,13 +16,15 @@ import sys
 from pathlib import Path
 
 HOME = Path(os.path.expanduser("~"))
-PROJ = HOME / "gokul-os"
-MEMORY_DIR = HOME / ".claude" / "projects" / "-Users-viresha-gokul-os" / "memory"
+# Resolve project path: CLAUDE_PROJECT_DIR env var (set by settings.json hooks) → cwd fallback
+_project_dir = Path(os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd()))
+_proj_slug = "-".join(str(_project_dir).lstrip("/").split("/"))
+MEMORY_DIR = HOME / ".claude" / "projects" / _proj_slug / "memory"
 MEMORY_MD = MEMORY_DIR / "MEMORY.md"
-_handoff_proj = PROJ / ".claude" / "status" / "SESSION_HANDOFF.md"
+_handoff_proj = _project_dir / ".claude" / "status" / "SESSION_HANDOFF.md"
 _handoff_home = HOME / ".claude" / "status" / "SESSION_HANDOFF.md"
 HANDOFF_PATH = _handoff_proj if _handoff_proj.exists() else _handoff_home
-AGENT_STATE = PROJ / ".claude" / "scratch" / "AGENT_STATE.json"
+AGENT_STATE = _project_dir / ".claude" / "scratch" / "AGENT_STATE.json"
 
 # Patterns that suggest an external resource ID was returned by an MCP tool
 MCP_ID_PATTERNS = [

@@ -6,7 +6,7 @@
 
 > **Claude Code agent?** Read [`REPO_MAP.md`](REPO_MAP.md) first, then run `/onboard`.
 
-Claude Code Starter Kit gives any Claude user a production-ready AI workspace in under 5 minutes. It installs a 23-hook automation system, 50+ slash commands, 10 specialist agents, and a structured memory architecture — so Claude remembers context across sessions, enforces quality, and routes tasks to the right specialist automatically.
+Claude Code Starter Kit gives any Claude user a production-ready AI workspace in under 5 minutes. It installs a 25-hook automation system, 28 slash commands, 10 specialist agents, and a structured memory architecture — so Claude remembers context across sessions, enforces quality, and routes tasks to the right specialist automatically.
 
 Works with Claude Code in terminal, VS Code, Cursor, JetBrains, or any IDE with the Claude extension.
 
@@ -109,7 +109,7 @@ The `claude-code-starter-kit` folder you cloned is no longer needed. You can del
 
 ```bash
 cd ~
-rm -rf claude-code-starter-kit
+rm -rf ./claude-code-starter-kit
 ```
 
 Everything has been copied to `~/personal-os`.
@@ -169,7 +169,7 @@ Your existing project stays untouched.
 
 ### Step 2 — Open the OS folder in Claude and run this prompt
 
-```
+```text
 I have an existing project at ~/your-existing-project.
 Read that project's files, memory, and any CLAUDE.md or notes there.
 Then populate my new OS memory files:
@@ -346,6 +346,25 @@ Create a JSON file in `.claude/tests/fixtures/` with this structure:
 ## /work pipeline
 
 The `/work` command routes every task through a structured pipeline: (1) Prompt Engineer agent reads your directive and produces a structured WorkOrder; (2) the WorkOrder is validated against hard-stop rules; (3) the right specialist agent executes it; (4) a GATE-2 review confirms the work meets done criteria before committing. This prevents ad-hoc execution and ensures every task has verifiable output.
+
+---
+
+## Staying updated
+
+Your installed kit tracks its own version. Check it anytime:
+
+```bash
+cat KIT_VERSION
+```
+
+To upgrade to the latest version:
+
+```bash
+# From inside the claude-code-starter-kit folder (re-clone if needed)
+bash install.sh --upgrade ~/path/to/your-project
+```
+
+This adds any new hooks, commands, or agents while preserving your existing customizations. See [UPGRADE.md](UPGRADE.md) for full details.
 
 ---
 
