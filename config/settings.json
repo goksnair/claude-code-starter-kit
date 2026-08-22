@@ -84,6 +84,15 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_PATH}}/.claude/hooks/scratch-artifact-guard.py"
+          }
+        ]
       }
     ],
     "PostToolUse": [
