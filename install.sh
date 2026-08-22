@@ -28,6 +28,23 @@ if ! command -v jq &>/dev/null; then
   exit 1
 fi
 
+check_existing_claude_dir() {
+  local target="$1"
+  if [[ -d "$target/.claude" ]]; then
+    echo ""
+    echo "ERROR: $target/.claude already exists."
+    echo ""
+    echo "  Fresh install would overwrite your existing configuration."
+    echo "  If you want to upgrade an existing installation, use:"
+    echo "    bash install.sh --upgrade $target"
+    echo ""
+    echo "  If you truly want a clean install, remove .claude/ first:"
+    echo "    rm -rf $target/.claude && bash install.sh"
+    echo ""
+    exit 1
+  fi
+}
+
 TEMPLATES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NON_INTERACTIVE=false
 PRINT_PLAN=false
@@ -344,6 +361,8 @@ echo "  User name    : $USER_NAME"
 echo "  Brand name   : $BRAND_NAME"
 echo "  Brand voice  : $BRAND_VOICE"
 echo ""
+
+check_existing_claude_dir "$PROJECT_PATH"
 
 # ── 2. Create directory structure ─────────────────────────────────────────────
 

@@ -2,6 +2,10 @@
 
 **Kit version:** see `KIT_VERSION` in your project root | [Upgrade guide](UPGRADE.md) | [Changelog](CHANGELOG.md)
 
+## Who this is for
+
+This kit is for **new projects** or repos that do not already have a `.claude/` directory. It creates a complete AI workspace from scratch. If you already have a custom `.claude/` setup, use `--upgrade` mode instead of fresh install.
+
 ## What it is
 
 > **Claude Code agent?** Read [`REPO_MAP.md`](REPO_MAP.md) first, then run `/onboard`.

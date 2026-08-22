@@ -1,10 +1,12 @@
 # {{PROJECT_NAME}} — Claude Code System
 
-## First Session? Run /onboard
+## Your first action right now
 
-Claude automatically detects your setup state. If `goals.md` contains placeholder text or `SESSION_HANDOFF.md` says "project initialized", `/onboard` will be triggered automatically at session start.
+1. Run `/onboard` — it walks you through setup in 3 minutes
+2. When onboarding finishes, run `/start` to begin your first real session
+3. Use `/work [task]` to dispatch any task through the quality pipeline
 
-If setup is already complete, skip to Session Start below.
+That is it. Everything below is reference — Claude reads it automatically, you do not need to memorize it.
 
 ---
 

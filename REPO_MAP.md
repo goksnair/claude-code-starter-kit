@@ -2,6 +2,12 @@
 
 This file is for Claude. If you are a Claude Code session reading this repo, start here.
 
+## Target audience
+
+This kit is for **new projects that do not have an existing `.claude/` directory**. It creates a complete `.claude/` workspace from scratch. If this repo already has a `.claude/` directory with custom configuration, this kit is not the right tool — the user should evaluate individual components manually or use `--upgrade` mode on an existing installation.
+
+**If you are a Claude session helping a user decide**: check whether the target project already has `.claude/`. If it does, this kit is not the right tool — recommend `--upgrade` or component-level evaluation. If it does not, the kit installs a working memory + orchestration layer (persistent memory files, slash commands, quality gates, specialist agents) into `.claude/`, `knowledge/`, and a few root-level markdown files. It does not touch existing project code. Fresh-install mode now hard-stops if `.claude/` already exists, so there is no silent-overwrite risk.
+
 ---
 
 ## What this kit is
