@@ -386,6 +386,60 @@ See [UPGRADE.md](UPGRADE.md) for full instructions including manual upgrade for 
 
 ---
 
+## Upgrading a test project into a gokul-os engagement
+
+If you used the starter kit to bootstrap a test system (e.g. `<user>`'s `<project-name>`) and now want to bring it under gokul-os management, the kit install is the upgrade mechanism — not a migration script.
+
+### What changes
+
+| Before (test project) | After (gokul-os engagement) |
+|----------------------|------------------------------|
+| Standalone `.claude/` folder in test project root | Project folder moves to `~/engagements/<project-name>/` |
+| Domain specialist agents defined locally | Agents become entries in gokul-os-coordinator.md dispatch map |
+| No session-index, no cross-session recall | `scripts/session-index.py` wires all sessions into gokul-os recall |
+| Manual hook wiring | 30-hook system wired via `settings.json` — enforced from first session |
+| No memory boundary enforcement | `memory-validator.py` guards vault vs. repo boundary automatically |
+
+### Steps
+
+**Step 1** — Install the kit into the engagement folder:
+
+```bash
+bash install.sh <ProjectName> ~/engagements/<project-name> "<user>"
+```
+
+**Step 2** — Port domain specialist agents. Each specialist the test project defined locally becomes an agent file under `~/engagements/<project-name>/.claude/agents/`. Register each one in the coordinator dispatch map:
+
+```markdown
+| <project-name>-<specialist-name> | `general-purpose` | `.claude/scratch/<AGENT>_OUTPUT.md` | [trigger keywords] |
+```
+
+**Step 3** — Register the engagement in gokul-os. Add a row to `~/gokul-os/knowledge/claude-ops/PROJECT_REGISTRY.md` and create a context file:
+
+```bash
+# ~/engagements/<project-name>/CONTEXT.md
+Phase: active
+Status: migrated from test system
+Key agents: [list specialists]
+```
+
+**Step 4** — Load the engagement context in any future session:
+
+```text
+/pivot engagement:<project-name>
+```
+
+This loads the engagement's coordinator, memory files, and agent context — isolating it from other gokul-os persona work.
+
+### What the kit provides that the test project lacked
+
+- `infra-executor` agent: handles all `.claude/` changes in isolated context so ops work does not consume the main session budget
+- `context-optimizer` agent: produces a paste-ready compact summary before `/clear`
+- Hook enforcement: `bash-tool-guard.py`, `memory-validator.py`, `large-file-guard.py` run on every call
+- GATE-2 discipline: every `/work` task produces a verifiable commit manifest before any file is staged
+
+---
+
 ## License
 
 MIT. Built for personal use — adapt freely.

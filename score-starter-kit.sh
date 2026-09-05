@@ -35,7 +35,7 @@ record() {
 
 DIM_NAMES[1]="Install success"
 set +e
-bash "$INSTALL_SCRIPT" "ScoreTest" "$INSTALL_PATH" "Test User" > /tmp/sk-install.log 2>&1
+bash "$INSTALL_SCRIPT" --non-interactive "ScoreTest" "$INSTALL_PATH" "Test User" > /tmp/sk-install.log 2>&1
 INSTALL_EXIT=$?
 set -e
 
